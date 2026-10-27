@@ -33,6 +33,8 @@ Every harness run writes `.harness/out/<run-id>/report.json`, a list of `{level,
 
 Stop at the first level that fails, fix the cause, then re-run from that level.
 
+Slow suites (`checks.full`, simulator, emulator or desktop-app tests) run once per verify; re-run one only to re-check a failure. Turn off slow post-test extras the test tool offers unless a failure needs them (for example `xcodebuild test -collect-test-diagnostics never`).
+
 1. **Static and unit** — the contract's `checks.fast`, then `checks.full` (harness: `unit`).
 2. **Wider suite** — the integration or e2e tests the contract's `run` names that cover the touched flow (harness: `story`, `db`).
 3. **Run the real thing** — launch the app per the contract's `run` (or a `run` skill if one is installed) and drive the changed flow. Capture a screenshot or the output as evidence (harness: `story` on a target, with a screenshot).

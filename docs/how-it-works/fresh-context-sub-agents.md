@@ -13,11 +13,11 @@ A reviewer who watched the code being written shares the author's blind spots. A
 | Step | Agent | Gets | Returns |
 |---|---|---|---|
 | Plan review | one fresh reviewer, strongest model | the plan paths and rule file paths, not the author's reasoning | findings; the author fixes |
-| Code a phase | one fresh coder per phase | the whole plan, the rule file paths, the contract's commands | one commit |
-| Review a phase (`go`) | one fresh agent that reviews and fixes | the diff, the plan, the rule files | a findings table and one fix commit |
-| Review a brief or a series | fresh table-only reviewers, one per topic rule file plus one general; fresh fixer per round, at most 3 rounds | the diff and the rules; never earlier findings | merged table; `fix: review round <N>` |
+| Code | one fresh coder per run of phases, as many as fit under about 400k tokens; it self-reviews and runs only `checks.fast` plus a compile | the whole plan, the rule file paths, the contract's commands | one commit per phase |
+| Review a series (`go`) | one fresh agent that reviews and fixes, once after the last run; also after a run that touches a `risk` area | the series diff (or that run's), the plans, the rule files | a findings table and one fix commit |
+| Review a headless run (`brief`, `go`) | fresh table-only reviewers, one per topic rule file plus one general; fresh fixer per round, at most 3 rounds | the diff and the rules; never earlier findings | merged table; `fix: review round <N>` |
 | Review lens | one fresh agent per lens (security, docs, speed, architecture) | the lens file, the diff or the whole project | the lens's table, merged; read-only |
-| Verify | one fresh agent with the `verify` skill | `checks`, `run`, `harness`, the plan's `## Verification`, the diff | the evidence table and owner follow-ups |
+| Verify | one fresh agent with the `verify` skill, once per series; the only place slow suites run | `checks`, `run`, `harness`, the plan's `## Verification`, the diff | the evidence table and owner follow-ups |
 
 The orchestrator (`go`, `brief`) keeps only conclusions: commits, findings, deviations. Never the diffs.
 
@@ -26,9 +26,9 @@ The orchestrator (`go`, `brief`) keeps only conclusions: commits, findings, devi
 - **Rule files by path.** Sub-agents don't load `AGENTS.md` or topic rules by themselves; the prompt names them.
 - **Contract commands quoted.** The prompt includes the actual `codegen` and `checks.fast` commands.
 - **Commit discipline.** One commit at the end; `codegen` if a matching file changed, then `checks.fast`; hooks pass, never skipped.
-- **Sized to fit.** A plan phase fits one coder (the `plan` skill's size check). A phase that doesn't is split, never run whole.
+- **Sized to fit.** A plan phase fits one coder (the `plan` skill's size check). A phase that doesn't is split, never run whole. Small phases share a coder while the run stays under about 400k tokens.
 - **Cheap work stays home.** Starting an agent costs about 50k tokens. Status checks, worktree cleanup and one-line doc edits are done by the orchestrator.
 
 ## Agents without sub-agents
 
-Per `.solidvibes/agents.md`: `solidvibes run` gives each phase its own fresh session. Without it, the steps run in one session and the report says plainly that the review was not independent.
+Per `.solidvibes/agents.md`: `solidvibes run` gives each run its own fresh session. Without it, the steps run in one session and the report says plainly that the review was not independent.

@@ -41,7 +41,7 @@ Prefer the simplest approach that works and the one that stays stable over time.
 
 Proceed without waiting for a "go", unless the brief has an open question that would change the approach, or the change touches a `risk` area. Then stop and wait; if it is a `risk` area, show the user a visual of the choice and one plain sentence on what it changes for them.
 
-Run `codegen` if a matching file changed, then `checks.fast`; before handing off, `checks.full`. Surface pre-existing errors in unrelated files, don't fix them.
+Run `codegen` if a matching file changed, then `checks.fast` plus a compile of what changed. `checks.full` and device or app suites run once, in the verify at the end. Surface pre-existing errors in unrelated files, don't fix them.
 
 ## Phase 4 — Hand off
 
@@ -53,7 +53,7 @@ If the change revealed stale or missing docs, reconcile them on the right side o
 
 ## Phase 5 — Review
 
-Run the `review` skill on the current diff: specialist review per the contract. Show the merged findings table, then fix every BLOCKER and every SUGGEST you agree with, without asking, and re-run `checks.fast` (plus affected tests). Only stop to ask if a finding contradicts the brief.
+Run the `review` skill on the current diff: specialist review per the contract. Show the merged findings table, then fix every BLOCKER and every SUGGEST you agree with, without asking, and re-run `checks.fast` plus the compile. Only stop to ask if a finding contradicts the brief.
 
 Then run the `verify` skill against the brief's approach and fix what fails.
 
@@ -106,7 +106,7 @@ Spawn a fresh sub-agent. Pass:
 - The commit discipline.
 
 ### 3. Review → fix loop (max 3 rounds)
-Same loop as the `go` skill's per-phase review (the headless section's loop), with the briefer note in place of the plan sections: fresh reviewers each round using the `review` skill, merge the tables, a fresh fixer for BLOCKERs, commit as `fix: review round <N> (<M> findings)`. Unresolved BLOCKERs go in the PR body.
+Same loop as the `go` skill's headless review loop, with the briefer note in place of the plan sections: fresh reviewers each round using the `review` skill, merge the tables, a fresh fixer for BLOCKERs, commit as `fix: review round <N> (<M> findings)`. Unresolved BLOCKERs go in the PR body.
 
 ### 4. Verify
 Spawn a fresh sub-agent. Pass the `verify` skill, the contract's `checks`, `run` and `harness`, the task, the briefer note, the diff against the default branch and the same rule paths, and: "This is a sandboxed headless run: no cloud credentials, no GUI. Anything needing them is an owner follow-up, not a failure. Fix failures you can, commit ONCE as `fix: verification`", plus the commit discipline. Capture its table and owner follow-ups.

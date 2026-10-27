@@ -11,7 +11,7 @@ Review the changes as a PR reviewer would, or look at the project through a lens
 | --- | --- | --- |
 | **Full** (default) | The user asks for a review | Step-by-step review, then the findings table with OK rows |
 | **Table-only** | You are a reviewer sub-agent, or the user wants "just the verdict" | The findings table and nothing else, no OK rows |
-| **Review-and-fix** | One agent reviews and fixes in the same context (used per phase by `go`, and by `brief`) | Table first, then the fixes |
+| **Review-and-fix** | One agent reviews and fixes in the same context (used by `go` once per series and on runs that touch a `risk` area) | Table first, then the fixes |
 | **Lens** | One concern, on a diff or on the whole project (see Lenses) | The lens's table, read-only |
 
 What the user reads is plain: a verdict, what was wrong in words, what was fixed. The table keeps its technical detail (file, line, layer); it is for a reviewer and for the PR body.
@@ -120,7 +120,7 @@ One agent, one round, no loop. Produce the findings table first, then act on it:
 - Apply each SUGGEST unless it contradicts the plan's `## Decisions`, would break the build, or is wrong (a SUGGEST can be: a "redundant cast" that is load-bearing, for example). Verify before applying; skipping is a legitimate outcome, silently applying a wrong fix is not.
 - Findings that only bite a later phase: don't fix them, hand them back for that phase's coder.
 - Do not ask "fix all?"; the mandate is to fix.
-- Run the contract's `codegen` if matching files changed, then `checks.fast` and the affected tests, then commit once as `fix: review findings (<M>)`. No findings acted on → no commit.
+- Run the contract's `codegen` if matching files changed, then `checks.fast` plus a compile of what changed, then commit once as `fix: review findings (<M>)`. No findings acted on → no commit. Slow suites (`checks.full`, device and app tests) are left to the `verify` that follows.
 - If a finding is design-level, contradicts the plan, or clearly won't hold in one pass, stop and report instead of fixing blind.
 
 Nothing double-checks this agent, so report plainly: the findings table verbatim, which findings were fixed and which skipped with the reason, and whether any fix forced it outside the plan's `## Approach` or `## Decisions`.
