@@ -1,0 +1,12 @@
+- **layers** — none
+- **checks** — fast: `solidvibes lint .` · full: `solidvibes lint .` · needs `solidvibes` on PATH (in Claude Code the plugin puts it there)
+- **codegen** — none
+- **run** — none
+- **plans** — `docs/plans/YYYY-MM-DD-<slug>.md`
+- **docs** — behavior: `docs/how-it-works/` · direction: `docs/direction/` · which goes where: `docs/CONVENTIONS.md` · changelog: `CHANGELOG.md` under `## Unreleased`, one plain sentence
+- **rules** — always-on: `AGENTS.md` · topic: `.agents/skills/*/SKILL.md`; a skill applies when the change touches what its description names
+- **risk** — sign-in and accounts, payments, deleting or moving people's data, anything that sends data to another service, secrets
+- **ships** — none
+- **sandbox** — none
+- **stack** — `docs/stack.md` ({{profile}})
+- **harness** — none

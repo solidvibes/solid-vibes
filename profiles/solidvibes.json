@@ -1,0 +1,11 @@
+{
+  "$schema": "https://nono.sh/schema/profile.json",
+  "extends": "default",
+  "meta": {
+    "name": "solidvibes",
+    "description": "Sandbox for a headless `solidvibes run`. Extends `default`, which denies credentials, keychains, browser data, shell history and shell configs. Adds nothing: `solidvibes run` grants the repo, the run's worktree, the agent and the contract's `sandbox` paths per run."
+  },
+  "workdir": {
+    "access": "readwrite"
+  }
+}

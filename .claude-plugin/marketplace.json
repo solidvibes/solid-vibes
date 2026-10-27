@@ -1,0 +1,17 @@
+{
+  "name": "solid-vibes",
+  "description": "Solid Vibes: vibe coding that holds up.",
+  "owner": { "name": "Stojanov Ventures" },
+  "plugins": [
+    {
+      "name": "sv",
+      "source": "./",
+      "description": "The method: interview, plan, go, review, verify, release, hello and bye."
+    },
+    {
+      "name": "sv-pro",
+      "source": { "source": "github", "repo": "solidvibes/solid-vibes-pro" },
+      "description": "The Flutter and Supabase extension: stack decisions and rules for the app, data, backend, tests, security, CI and release."
+    }
+  ]
+}

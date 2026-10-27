@@ -1,0 +1,45 @@
+# One case per line: request<TAB>expected route. # starts a comment.
+# Routes: interview design brainstorm brief plan several review idea release hello bye update trivial
+I'm a dentist and want my patients to book online	interview
+I want to build an app that helps me keep track of my students' homework	interview
+I have an idea for a little website for my bakery	interview
+Where do I start? I want something that lets my book club vote on the next book	interview
+New project: a way for my team to log their hours	interview
+How should the app look?	design
+Pick colours for the app	design
+We need a style for the whole app: colours, fonts, all of it	design
+Make the home screen feel friendlier	brainstorm
+I'm not sure how the home screen should feel, what are my options?	brainstorm
+Let's think about how people should sign up, I don't know what is best	brainstorm
+Can we add a new page that explains what we do? I don't know what it should say	brainstorm
+I'd like the app to feel friendlier but I can't say how	brainstorm
+Fix the typo on the pricing page, it says 'recieve'	trivial
+What does the Factory contract do?	trivial
+Change the button on the login screen from blue to green	brief
+The contact form doesn't send the email, can you fix that?	brief
+Add a print button to the invoice page	brief
+Make the opening hours show on the footer	brief
+I want patients to be able to pay for appointments, get reminders by text and reschedule on their own	plan
+Let's add accounts so each teacher can only see their own classes, with a way to invite colleagues	plan
+We need to move all our data to a new system without losing anything	plan
+Fix the footer link, add a dark mode, and let users export their data as a spreadsheet	several
+Three things: rename the Settings page, add a welcome email and fix the slow search	several
+How does the booking reminder actually work?	trivial
+Is it true that deleted accounts are really removed? Check the code	trivial
+Are the docs still true after all the changes this week?	review
+Is anything in the documentation out of date?	review
+Update the docs with what we changed today	brief
+Not now, but remember that I want a tip jar later	idea
+Park this thought: maybe a yearly summary email for customers	idea
+Everything is green, put it live	release
+The pull requests look good, merge them and publish the update	release
+Could someone steal my customers' data? Is it safe to launch?	review
+Before the first release, I want a security check on sign-in and payments	review
+Good morning! Let's start	hello
+Hello, where were we?	hello
+That's it for today, good night	bye
+Let's wrap up, bye	bye
+Update everything	update
+Can you upgrade Flutter and all the packages to the latest versions?	update
+Bring the repo up to date, it has been a while	update
+Update the docs, they still describe the old sign-up	brief

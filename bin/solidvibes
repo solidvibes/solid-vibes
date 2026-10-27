@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# solidvibes — the Solid Vibes CLI
+#
+#   solidvibes init [--profile <dir>] [--agents claude,codex,generic] <dir>
+#                                         set up or refresh a project; never deletes
+#   solidvibes lint <dir>                 check skills and JSON manifests
+#   solidvibes doctor [dir]               check a project's contract, generated files, harness and links
+#   solidvibes worktrees [--clean] [path] list worktrees; --clean removes the finished ones
+#   solidvibes run <plan|"task"> [--agent claude|codex|"<cmd>"] [--dry-run] [--no-sandbox]
+#                                         start a headless run in its own worktree
+#   solidvibes stop <slug>                stop a run
+#   solidvibes install [nono]             link the skills for Codex and other agents, or the nono profile
+#   solidvibes hello [--full] [--checked] [--hook] [dir]
+#                                         a project's status at the start of a session
+#   solidvibes handover --snapshot [dir]  write the git snapshot into .solidvibes/handover.md
+#   solidvibes statusline --check|--install|--decline
+#                                         report or install the Claude Code status bar script
+#   solidvibes update [dir]               a project's branches, changes, changelog and ecosystems
+
+set -euo pipefail
+
+self="${BASH_SOURCE[0]}"
+while [ -L "$self" ]; do
+  link="$(readlink "$self")"
+  case "$link" in
+    /*) self="$link" ;;
+    *) self="$(dirname "$self")/$link" ;;
+  esac
+done
+SOLIDVIBES_ROOT="$(cd "$(dirname "$self")/.." && pwd -P)"
+export SOLIDVIBES_ROOT
+
+usage() {
+  sed -n '2,19s/^# \{0,1\}//p' "$SOLIDVIBES_ROOT/bin/solidvibes"
+}
+
+cmd="${1:-}"
+[ $# -gt 0 ] && shift
+case "$cmd" in
+  init|lint|doctor|worktrees|run|stop|install|hello|handover|statusline|update)
+    # shellcheck source=/dev/null
+    source "$SOLIDVIBES_ROOT/lib/cli-$cmd.sh"
+    "cli_$cmd" "$@"
+    ;;
+  ""|-h|--help|help)
+    usage
+    ;;
+  *)
+    echo "solidvibes: unknown command: $cmd" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
