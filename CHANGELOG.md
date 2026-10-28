@@ -15,3 +15,4 @@ One plain sentence per entry.
 - The `solidvibes` command sets a project up, checks its setup, cleans up finished worktrees, blocks commits that carry secrets or personal paths, and hands a plan to Claude, Codex or another agent in a sandboxed copy that can't change your GitHub or git settings.
 - Stack know-how comes from the sv-pro plugin, turned on per project.
 - In Claude Code, setup offers a status bar with the folder, branch, model, how full the AI's memory is, cost and time.
+- The README now says plainly what Solid Vibes is, the four steps of the method, what you do and how to set it up.
