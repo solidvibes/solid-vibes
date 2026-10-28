@@ -44,7 +44,7 @@ wt_size_kb() { # du still prints a total when a file vanishes mid-walk
 
 wt_real_path() { (cd "$1" 2>/dev/null && pwd -P) || echo "$1"; }
 
-wt_mtime() { stat -f %m "$1" 2>/dev/null || stat -c %Y "$1"; }
+wt_mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
 
 # Seconds since the newest of the worktree's index and logs/HEAD. 0 if neither exists.
 wt_idle_secs() {

@@ -21,4 +21,8 @@ jobs:
       - run: |
           git config --global user.name "ci"
           git config --global user.email "ci@users.noreply.github.com"
+      - name: Install gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
       - run: bash tests/run.sh
