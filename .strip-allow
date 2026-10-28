@@ -4,3 +4,4 @@ scripts/strip-check.sh  # the gate itself names the patterns it looks for
 lib/cli-lint.sh         # the linter names the owner paths it refuses
 tests/strip_check.sh    # plants fake keys and owner paths on purpose, in a temp copy
 tests/cli_lint.sh       # plants owner paths in temp skills on purpose
+README.md:email          # the public contact address, on purpose

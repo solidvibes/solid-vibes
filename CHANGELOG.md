@@ -16,3 +16,4 @@ One plain sentence per entry.
 - Stack know-how comes from the sv-pro plugin, turned on per project.
 - `go` builds a multi-phase plan much faster: one AI codes as many phases as fit, then one review and one full test run cover them all.
 - In Claude Code, setup offers a status bar with the folder, branch, model, how full the AI's memory is, cost and time.
+- The README now says plainly what Solid Vibes is, the four steps of the method, what you do and how to set it up.
