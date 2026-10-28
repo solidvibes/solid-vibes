@@ -5,12 +5,12 @@ description: Build an approved plan, or several, all the way to green pull reque
 
 # Go
 
-Execute one plan or many, end to end, without stopping for the user: one fresh coder per phase, one review-and-fix agent per phase, verify after each phase, a visual check, parallel lanes in worktrees for independent plans. It ends at green pull requests.
+Execute one plan or many, end to end, without stopping for the user: one coder for as many phases as fit its context budget, checking its own work, then one independent review and one verify over the whole series, a visual check, parallel lanes in worktrees for independent plans. It ends at green pull requests.
 
 You are the **lean orchestrator**. Sub-agents code, review and verify; you keep their conclusions (commits, findings, deviations), never their diffs. Keep your own replies to a few lines.
 
 Modes (one loop, different entries):
-- **Single plan** — one plan, one coder.
+- **Single plan** — one plan, phases grouped into as few coder runs as fit.
 - **Series** — several plans or phases in order on one shared branch and one PR.
 - **Lanes** — independent plans run in parallel in worktrees, each lane a series.
 - **Headless** — started by `solidvibes run <plan>` inside a worktree, no one to ask. See the last section.
@@ -44,9 +44,10 @@ Read the project's Factory contract: the `## Factory` section of `AGENTS.md` in 
 - Resolve the plans to run, **in order**: the file paths the user names; for "the phases", the `<slug>-phase-*.md` set in the contract's `plans` (default `docs/plans/`) in phase order; with no plan named, the one that is `Approved` and not `Implemented` (ask only if there are several). Later plans build on earlier ones, so order is load-bearing and plans on one branch run strictly sequentially.
 - Read each plan in full and its `## Constraints` for `rules` file paths; pass them to every sub-agent.
 - Tell every sub-agent the plan's packs: "Load the skills for packs <names> and apply `## Overrides` from docs/stack.md." Sub-agents get no prompt hook, so the prompt must say it.
-- **A plan with several phases inside it, or one that fails the `plan` skill's size check, is never run whole.** Run its phases one at a time, a fresh coder per phase.
+- **Group phases into coder runs.** One coder takes consecutive phases, in order, while the run stays under about 400k tokens of context (each phase's size from the `plan` skill's size check). Several small phases, or a whole small plan, go to one coder; a big phase gets a coder of its own. A phase that touches a contract `risk` area ends its run, so it is reviewed before anything builds on it. A plan that fails the size check is never run whole.
 - **Branch strategy: one shared branch per series.** On the default branch, create `feat/<slug>` and work there; never commit the series straight to the default branch. No worktree and no PR per plan in a series. If the user asked to commit pre-existing working-tree changes first, make them one checkpoint commit before branching.
-- Run the contract's `codegen` and checks per its rules; every sub-agent that commits gets the **commit discipline**: before committing, run `codegen` if a matching file changed, then `checks.fast`; pre-commit hooks must pass, never skipped. Quote the contract's actual commands in the prompt, since sub-agents don't see this one.
+- Run the contract's `codegen` and checks per its rules; every sub-agent that commits gets the **commit discipline**: before committing, run `codegen` if a matching file changed, then `checks.fast` plus the compile; pre-commit hooks must pass, never skipped. Quote the contract's actual commands in the prompt, since sub-agents don't see this one.
+- **Test budget: slow suites run once per series.** Per phase and in the review: `checks.fast` plus a compile of what changed (the build part of `run` when `checks.fast` doesn't compile it: no tests, no launch). `checks.full`, device and app suites (simulator, emulator, desktop app) and the `run` walkthrough run once, in the final verify, and again only to re-check something that failed. Turn off slow post-test extras the test tool offers unless a failure needs them (for example `xcodebuild test -collect-test-diagnostics never`). Put this in every prompt that runs tests.
 
 ## Lanes (several independent plans)
 
@@ -55,55 +56,64 @@ Read the project's Factory contract: the `## Factory` section of `AGENTS.md` in 
 - Per lane: one background sub-agent in its own worktree (in Claude Code, `isolation: "worktree"`; elsewhere `solidvibes worktrees` and `git worktree add`), told to run this skill's **Series** mode on its plans in order, treat the plans as approved, pass the user's earlier answers (recorded as **mine** decisions in the plans' `## Decisions`), and follow the contract's `run` rules (local stacks, simulators, never production, never a physical device).
 - **One machine.** Lanes share the user's computer. At most two lanes build or test at once; device suites (simulator, emulator, desktop app) run one at a time across all lanes. Tell every lane: cap test concurrency, one scratch backend per lane and stop it after each run, stop build daemons after builds, kill processes it started, shut down devices it booted when done.
 - A lane that depends on another lane's unmerged work waits, or stacks on its branch. Say which, and why.
-- **Phases you run yourself still get reviewed.** When you drive a plan phase by phase instead of handing a lane Series mode, follow the per-phase review below after every coder. Never skip it because the coder said its checks pass.
+- **Phases you run yourself still get reviewed.** When you drive a plan phase by phase instead of handing a lane Series mode, follow the same flow: coder runs grouped as above, risk reviews where they apply, then the series review and the verify. Never skip them because the coder said its checks pass.
 
-## For each plan, in order
+## For each coder run, in order
 
-### 1. Code
-Spawn a fresh sub-agent. Pass:
-- The **full plan file path**: tell it to read the whole plan and execute it end to end. Give sub-agents the entire plan, since they need Context, Approach and Constraints.
+A plan without phases is a series of one phase. The independent review and the verify run once, after the last run.
+
+### 1. Code and self-review
+Spawn a fresh sub-agent for the run's phases. Pass:
+- The **full plan file paths** and which phases are this run's: tell it to read each whole plan and execute those phases end to end, in order. Give sub-agents the entire plan, since they need Context, Approach and Constraints.
 - `AGENTS.md` for the invariants, and the contract's `layers`.
 - **What earlier plans already landed on this branch**: name the files and symbols the prior phases created or changed, and tell it to read their *current* state. A plan was written against the pre-feature tree; by phase 2 that tree has moved.
 - Rule paths from Constraints.
-- **Sync with the default branch first**, unless on it: `git fetch origin && git merge origin/<default>` as its own merge commit (never rebase, never force-push); with no remote, skip the sync. Resolve conflicts keeping both sides' intent; regenerate generated files with the contract's `codegen` instead of hand-merging; run `checks.fast`. A conflict where the two sides genuinely contradict means stop and report. Already up to date → no commit. Record the resulting `HEAD` as the plan's **base**.
-- Discipline: **one commit for the plan**, not per step, with a focused message (why over what) ending with the project's co-author trailer; the commit discipline above; mark each step `- [x]` in the plan file as it completes (these land in the plan's commit); steps only a human can do (manual or GUI smoke steps) can't run headless, so leave them unchecked and surface them.
+- Findings carried forward from earlier runs (see step 3).
+- **Sync with the default branch first**, unless on it: `git fetch origin && git merge origin/<default>` as its own merge commit (never rebase, never force-push); with no remote, skip the sync. Resolve conflicts keeping both sides' intent; regenerate generated files with the contract's `codegen` instead of hand-merging; run `checks.fast`. A conflict where the two sides genuinely contradict means stop and report. Already up to date → no commit. Record the resulting `HEAD` as the run's **base**.
+- **Self-review before each commit**: re-read its own diff against the plan's `## Approach` and `## Decisions` and every `rules` file the diff touches, and fix what it finds. This does not replace the independent review.
+- **Test budget**: `checks.fast` plus the compile, nothing slower (see Setup).
+- Discipline: **one commit per phase**, not per step, with a focused message (why over what) ending with the project's co-author trailer; the commit discipline above; mark each step `- [x]` in the plan file as it completes (these land in that phase's commit); steps only a human can do (manual or GUI smoke steps) can't run headless, so leave them unchecked and surface them.
 - Don't pause between steps; the plan is approved. **Stop and report** only when a step proves impossible and the way around it changes a hard-to-undo decision (data ownership, a contract, a schema) or touches a contract `risk` area the plan didn't name. Every other deviation: decide, record it under `## Deviations` in the plan, and keep going. A stop comes back to you: stop the series and tell the user.
-- Have it report back: the base hash (and how any merge conflicts were resolved), steps done, commits (hash and subject), final check and test counts, deviations, unresolved BLOCKERs.
+- Have it report back: the base hash (and how any merge conflicts were resolved), steps done, commits (hash and subject), what its self-review fixed, final check and test counts, deviations, unresolved BLOCKERs, findings that only bite a later phase.
 
-Wait for completion before reviewing.
+Wait for completion before the next run.
 
-### 2. Review and fix (ONE agent, ONE round, no loop)
-Spawn **one** fresh sub-agent that reviews *and* fixes in the same context: two agents per plan, not three, and not one reviewer per `rules` file. A separate fixer pays a cold start to re-read a diff the reviewer already read. The one agent checks the diff against every `rules` file the diff touches.
+### 2. Risk review (only a run that touches a contract `risk` area)
+When a run's diff touches a `risk` area, review it now, before the next run builds on it: one fresh agent as in **Review the series** below, on this run's commits only (`git diff <base>..HEAD`, with the base the coder reported). Every other run waits for the series review.
+
+### 3. Carry forward
+Hand any finding that only bites a phase in a *later* run (a cost that appears once X is wired, a contract the next phase must honor) to that run's coder as context, instead of burning a fix round on something the next phase will resolve anyway.
+
+## After the last run
+
+### Review the series (ONE agent, ONE round, no loop)
+Spawn **one** fresh sub-agent that reviews *and* fixes in the same context, over the whole series' diff: not one per phase or run, and not one reviewer per `rules` file. A separate fixer pays a cold start to re-read a diff the reviewer already read. The one agent checks the diff against every `rules` file the diff touches.
 
 Pass:
-- The full plan path (its `## Approach` is the spec).
-- An instruction to diff **only this plan's commits**: `git diff <base>..HEAD`, with the base the coder reported. That excludes the default branch's merged changes and earlier plans, which are already reviewed.
+- Every plan path (each `## Approach` is the spec).
+- The diff: `git diff origin/<default>...HEAD` after a fetch, or the local default branch with no remote. That excludes the default branch's merged changes.
 - The contract's `rules` paths that apply to the diff.
 - The `review` skill, to run in its **review-and-fix mode** (its table-only reviewer instructions produce the table; it then fixes). Say: do not ask "fix all?".
-- The fix mandate: produce the findings table first, then act on it. Fix every BLOCKER; apply each SUGGEST unless it contradicts the plan's `## Decisions`, would break the build, or is wrong (verify before applying; skipping is legitimate, silently applying a wrong one is not). Findings that only bite a *later* plan are handed to you, not fixed. Commit once as `fix: review findings (<M>)` with the commit discipline. No findings acted on → no commit.
+- The fix mandate: produce the findings table first, then act on it. Fix every BLOCKER; apply each SUGGEST unless it contradicts a plan's `## Decisions`, would break the build, or is wrong (verify before applying; skipping is legitimate, silently applying a wrong one is not). Commit once as `fix: review findings (<M>)` with the commit discipline. No findings acted on → no commit.
 
-**Nothing double-checks this agent**, so it must re-run `checks.fast` and the tests before committing and report the findings table verbatim, which findings it fixed and which it skipped with the reason, and plainly whether any fix forced it outside the plan's `## Approach` or `## Decisions`. Capture all of that for the PR body under `## Unresolved findings`: an unverified fix that nobody flagged is worse than a known-open BLOCKER.
+**Nothing double-checks this agent's reasoning**, so it must run `checks.fast` plus the compile before committing (the verify next runs the full suite) and report the findings table verbatim, which findings it fixed and which it skipped with the reason, and plainly whether any fix forced it outside a plan's `## Approach` or `## Decisions`. Capture all of that for the PR body under `## Unresolved findings`: an unverified fix that nobody flagged is worse than a known-open BLOCKER.
 
-**Stop conditions: report, do not fix.** If a finding is design-level, contradicts the plan, or clearly won't hold in one pass, the agent stops and reports. When that comes back, **stop the series and tell the user** instead of continuing into the next plan on top of it.
+**Stop conditions: report, do not fix.** If a finding is design-level, contradicts a plan, or clearly won't hold in one pass, the agent stops and reports. When that comes back, **stop the series and tell the user** instead of verifying on top of it.
 
-Read the returned table yourself. It is your only view of the plan's quality; if the skip reasons don't hold up, this is the moment to catch it.
+Read the returned table yourself. It is your only view of the series' quality; if the skip reasons don't hold up, this is the moment to catch it.
 
-### 3. Verify the phase
-Run the `verify` skill for this phase (a fresh sub-agent, the contract's `checks`, `run`, `harness`, this plan's `## Verification` and the phase's diff). It fixes what it can in one commit (`fix: verification`) and reports its table and owner follow-ups. A failure it can't fix stops the series like a design-level finding.
-
-### 4. Carry forward
-Hand any review finding that only bites a *later* plan (a cost that appears once X is wired, a contract the next phase must honor) to that plan's coder as context, instead of burning a fix round on something the next phase will resolve anyway.
+### Verify the series (once)
+Run the `verify` skill once, as a fresh sub-agent: the whole diff against the default branch, every plan's `## Verification`, `checks.full`, the `run` walkthrough with a screenshot per changed screen and state, and the `harness`. It fixes what it can in one commit (`fix: verification`), re-runs only what failed, and reports its table and owner follow-ups. A failure it can't fix stops the series like a design-level finding.
 
 ## Visual check
 
-When a plan changes a screen or a flow, or at the end of a series, show the user the result: for each changed screen and state, a screenshot captured per the contract's `run` (or the mockup from the plan next to it), as the agent profile says to show visuals, else a local HTML file. Regenerate the plan's visual summary **as built**: what changed vs the plan, deviations, the verification table, and any `risk` area that still needs a human review, so the user can check the result without reading the diff.
+After the verify, when the series changed a screen or a flow, show the user the result: for each changed screen and state, the verify's screenshot (or the mockup from the plan next to it), as the agent profile says to show visuals, else a local HTML file. Regenerate the plan's visual summary **as built**: what changed vs the plan, deviations, the verification table, and any `risk` area that still needs a human review, so the user can check the result without reading the diff.
 
 ## Completion (once, after all plans)
 
 - For each plan: set `**Status**: Implemented` plus today's date, record deviations under `## Deviations` (a step that proved impossible, a decision you made that the plan didn't), and commit the plan updates.
 - **Changelog** per the contract's `docs`: one short user-facing line ("X now does Y") under `## Unreleased`. One plain sentence, no sub-clauses, no bold spans, no "instead of…" tails. Skip if `none` or the change is invisible to users.
 - **Docs**: move the touched `docs/how-it-works/<surface>.md` from `Planned` to `Built` in the same change that lands the code, and update "Right now" in `docs/README.md` when it exists. Reconcile the plan's `## Rule gaps` and any doc gaps on the right side of the contract's `docs` line: a behavior fact, limit or intent → the behavior docs; a code rule or gotcha → the matching `rules` file, a line or two, don't let it bloat; a crosscutting invariant → `AGENTS.md`. Don't restate behavior in a rule file. Stop to ask only for a brand-new rule file or a core change.
-- **Verify once more across the series**: the `verify` skill on the whole diff against the default branch (`git diff origin/<default>...HEAD` after a fetch, or the local default branch with no remote), every plan's `## Verification`, `checks.full`.
 - **Docs drift check**: run the `review` skill with the docs lens after the last phase, scoped to the docs the plans touched plus any doc that names a changed file or behavior. The lens reports and fixes nothing. Put its drift list (doc line, claim, what the code does) in the PR body under `## Docs drift`, or in the final report when there is no PR. Then fix the drift the plans own yourself, on the right side of the contract's `docs` line as in **Docs** above; the rest stays listed for the user.
 
 ## Drive to green
@@ -136,7 +146,7 @@ Started by `solidvibes run <plan>`: you run non-interactively (for example `clau
 - Read the file on the `PLAN_FILE:` line. Derive `<slug>` from the branch name (`git branch --show-current`, strip `auto/`).
 - Extract from `## Constraints` the `rules` file paths (pass them to every sub-agent) and from `## TL;DR` the bullets (they become the PR body).
 - Tell every sub-agent the plan's packs: "Load the skills for packs <names> and apply `## Overrides` from docs/stack.md."
-- Every sub-agent gets the commit discipline: one commit at the end, not per step; `codegen` if a matching file changed, then `checks.fast`; hooks must pass, never skipped. Quote the contract's actual commands.
+- Every sub-agent gets the commit discipline: one commit at the end, not per step; `codegen` if a matching file changed, then `checks.fast`; hooks must pass, never skipped. Quote the contract's actual commands. The test budget above applies: `checks.full` and device suites run in the verify only.
 
 ### 1. Code
 Spawn a fresh sub-agent. Pass the plan's `## TL;DR`, `## Files`, `## Steps` and `## Decisions` (these only, not the whole plan body), the contract's `layers`, "Read these rule files before starting: <paths>", the commit discipline, and: mark steps `- [x]` in the plan file as you complete them (they land in the single end commit). Do not pass your reasoning chain or anything from the plan beyond those sections. Wait for completion.

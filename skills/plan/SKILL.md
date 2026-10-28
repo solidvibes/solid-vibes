@@ -54,7 +54,7 @@ Each plan must fit one coder sub-agent in roughly 300–350k tokens of implement
 
 Also split when the work is long-running (multi-day, separate PRs) or phases would ship independently.
 
-If splitting: one file per phase (`<slug>-phase-1.md`, …), inner `layers` first (data and contracts), UI last. The split is part of what the user approves in Phase 6. One file with phase sections is also fine (the context stays together), but each phase must pass the size check on its own, and it is executed phase by phase, never as one run.
+If splitting: one file per phase (`<slug>-phase-1.md`, …), inner `layers` first (data and contracts), UI last. The split is part of what the user approves in Phase 6. One file with phase sections is also fine (the context stays together), but each phase must pass the size check on its own, and it is executed phase by phase, never as one run (`go` may hand several small phases to one coder while they fit its budget).
 
 ## Phase 4 — Write the plan
 
