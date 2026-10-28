@@ -13,7 +13,7 @@
 
 HELLO_DOCS="AGENTS.md docs/intent.md docs/stack.md docs/decisions docs/how-it-works .agents/skills"
 
-hello_mtime() { stat -f %m "$1" 2>/dev/null || stat -c %Y "$1"; }
+hello_mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
 
 hello_age() { # seconds → 5m, 3h, 2d
   if [ "$1" -ge 86400 ]; then echo "$(($1 / 86400))d"

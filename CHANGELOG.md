@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- Every pull request runs the tests on GitHub before it can be merged.
 - Saying "I want to build …" starts a conversation about the problem, who it is for and what it must never do, then sets the project up so every later request goes to the right step.
 - Twelve skills take work from a vague idea to a reviewed, checked pull request: you call interview, hello, bye, release and update by name, and the routing picks brainstorm, brief, plan, design, go, review and verify from what you say.
 - A new app gets its look before it is built: three directions to choose from, then the design system, the screens and one picture of how it all works.
