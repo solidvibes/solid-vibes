@@ -123,7 +123,7 @@ This is the human gate. The user won't read the whole plan, and won't read a wal
 
 No file or step lists. Ask the user to look at the boxes, and at the numbered items only if they want to. They answer per item ("ok", "3: use the other one", "risk 2 accepted") or comment on the visual; the planner updates the plan, you regenerate the page, and ask again until they accept.
 
-Once accepted, set `**Status**: Approved` and don't ask anything more. Write the next step into `.solidvibes/handover.md`: `- go <plan path>` as the first line under `## Next` (create the file with `# Handover` and `## Next` when missing; keep everything else, and leave `## Snapshot` as it is). Then end with exactly one line: "Type /clear, then say go." Don't start `go` here: the build starts on a clean context, and the handover tells the fresh session which plan is next.
+Once accepted, set `**Status**: Approved` and don't ask anything more. Write the next step into `.solidvibes/handover.md`: `- go <plan path>` as the first line under `## Next` (create the file with `# Handover` and `## Next` when missing; keep everything else, and leave `## Snapshot` as it is). Then end with exactly one line, the real path filled in: "Type /clear, then paste: `go <plan path>`". Don't start `go` here: the build starts on a clean context, and the handover tells the fresh session which plan is next.
 
 For a focused bug fix or small addition that doesn't need a lasting record, use `brief` instead. For work you aren't ready to commit to, write one paragraph to `docs/ideas/<slug>.md` instead, with no plan.
 

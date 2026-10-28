@@ -25,7 +25,7 @@ The `hello` skill runs `git fetch` and `hello --full`, then: reads the handover;
 
 The `bye` skill writes Done, Open and Next to `.solidvibes/handover.md` (about 15 lines, keeping `## Snapshot`), then writes this session's corrections and decisions where the contract's `docs` line says, never inside `solidvibes:begin/end` blocks.
 
-Between sessions the routing in `AGENTS.md` keeps Done, Open and Next current after a brief, a plan approval or a green pull request. A plan approval puts `- go <plan path>` first under Next and ends with "Type /clear, then say go."; the SessionStart hook prints the handover after the clear, so the fresh session knows which plan to build. No hook can make the AI write before compaction, so this is how its own words survive.
+Between sessions the routing in `AGENTS.md` keeps Done, Open and Next current after a brief, a plan approval or a green pull request. A plan approval puts `- go <plan path>` first under Next and ends with "Type /clear, then paste: `go <plan path>`"; the SessionStart hook prints the handover after the clear, so the fresh session knows which plan to build. `go` with no plan named reads that line too, then falls back to searching the plans folders for an approved plan, private ones included. No hook can make the AI write before compaction, so this is how its own words survive.
 
 ## Hooks (Claude Code)
 
