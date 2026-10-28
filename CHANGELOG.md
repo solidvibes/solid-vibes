@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- Saying go in a fresh session finds the approved plan, even one kept in a private folder git ignores.
 - Every pull request runs the tests on GitHub before it can be merged.
 - Saying "I want to build …" starts a conversation about the problem, who it is for and what it must never do, then sets the project up so every later request goes to the right step.
 - Twelve skills take work from a vague idea to a reviewed, checked pull request: you call interview, hello, bye, release and update by name, and the routing picks brainstorm, brief, plan, design, go, review and verify from what you say.

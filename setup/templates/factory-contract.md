@@ -12,7 +12,7 @@ The contract is read from `AGENTS.md` only. A `## Factory` in `CLAUDE.md` does n
 | **checks** | `fast` (before every commit) and `full` (everything, before handoff) commands |
 | **codegen** | File patterns → the command that regenerates their output. Generated files are never hand-edited |
 | **run** | How to launch the app, drive it and capture evidence (a screenshot or output). Integration, end-to-end and staging commands, if any |
-| **plans** | Where plans go, e.g. `docs/plans/YYYY-MM-DD-<slug>.md` |
+| **plans** | Where plans go, e.g. `docs/plans/YYYY-MM-DD-<slug>.md`. A private folder git ignores is named the same way, marked private: `` `plans/YYYY-MM-DD-<slug>.md` (private, git-excluded) `` |
 | **docs** | Behavior docs (how it works today), direction docs (not committed), the rule for which fact goes where, and the changelog (or `none`) |
 | **rules** | The files reviewers check against: always-on files (e.g. `AGENTS.md`) and topic files, and how to tell which topic files apply to a change (usually a skill's description) |
 | **risk** | Areas where a change needs a human review |
