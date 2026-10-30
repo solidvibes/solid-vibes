@@ -58,6 +58,7 @@ Every conversation runs this way. No command needed.
 5. **Building ends at green pull requests.** Merging, deploying and store releases go through `release`, and only on the owner's go, one step at a time.
 6. **Keep the handover current.** After a brief, a plan approval or a green pull request, update `.solidvibes/handover.md`: one line each under Done, Open and Next. Leave its `## Snapshot` section as it is.
 7. **Follow the stack packs.** When `docs/stack.md` lists packs under `## Packs`, load the skill of each pack that covers the files you touch and apply its `## Overrides`. Local overrides win; say in one line when you apply one.
+8. **Do each craft well.** The craft skills say how to do one discipline well on any stack: `brand` (logo, app icon, brand board), `design-system` (colours, type, parts), `accessibility` (everyone can use it), `security-basics` (sign-in, payments, personal data, secrets), `writing` (words people read). Follow the one that covers the work, inside whichever step above handles it.
 
 Each backticked name is a skill. An agent without a skill loader reads it at `~/.agents/skills/<name>/SKILL.md`, where `solidvibes install` put it.
 

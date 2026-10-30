@@ -68,6 +68,7 @@ Spawn a fresh sub-agent for the run's phases. Pass:
 - `AGENTS.md` for the invariants, and the contract's `layers`.
 - **What earlier plans already landed on this branch**: name the files and symbols the prior phases created or changed, and tell it to read their *current* state. A plan was written against the pre-feature tree; by phase 2 that tree has moved.
 - Rule paths from Constraints.
+- **Craft skills**: when the phases touch what people see or read, the `accessibility` and `writing` skills; when they touch sign-in, payments, personal data or secrets, the `security-basics` skill. Tell it to follow their basics.
 - Findings carried forward from earlier runs (see step 3).
 - **Sync with the default branch first**, unless on it: `git fetch origin && git merge origin/<default>` as its own merge commit (never rebase, never force-push); with no remote, skip the sync. Resolve conflicts keeping both sides' intent; regenerate generated files with the contract's `codegen` instead of hand-merging; run `checks.fast`. A conflict where the two sides genuinely contradict means stop and report. Already up to date → no commit. Record the resulting `HEAD` as the run's **base**.
 - **Self-review before each commit**: re-read its own diff against the plan's `## Approach` and `## Decisions` and every `rules` file the diff touches, and fix what it finds. This does not replace the independent review.
