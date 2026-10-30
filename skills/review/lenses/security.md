@@ -8,7 +8,7 @@ The user reads plain words: what could go wrong for the people using the project
 
 - Read the project's Factory contract: the `## Factory` section of `AGENTS.md` in the repo root (spec: `.solidvibes/factory-contract.md`). `ships` decides the platform checks in Step 7; `risk` is where to look hardest. Missing → say so in plain words and offer the `interview` skill.
 - The whole project, unless the user named a scope or you were given a diff.
-- **The basics.** Read `## The basics` in the `security` skill: the floor every build must meet, written there once. Check each against the code first; one not met is a finding (HIGH when it exposes secrets or personal data, else MEDIUM). Steps 2–8 go deeper than the basics.
+- **The basics.** Read `## The basics` in the `security-basics` skill: the floor every build must meet, written there once. Check each against the code first; one not met is a finding (HIGH when it exposes secrets or personal data, else MEDIUM). Steps 2–8 go deeper than the basics.
 - **Profile checklists.** The contract's `stack` field names the profile (`stack-<name>`). When it is not `none`, find that profile's folder (the installed skill of that name) and read every file in its `security/` folder. Each is a checklist for one topic; work through it in the step it belongs to and add its items to the table. No `stack`, no profile folder or no `security/` folder → run the steps below alone and say that no stack checklists were available.
 
 ## Step 2 — Secrets and credentials

@@ -74,7 +74,7 @@ Craft skills say how to do one thing well, on any stack. The AI uses them inside
 | brand | A logo, an app icon and a brand board that shows the look on real things. |
 | design-system | Colours for light and dark, type sizes, spacing and the core parts, built for everyone. |
 | accessibility | The basics that let everyone use it: contrast, text that grows, screen readers, touch size. |
-| security | Keeps the people using it safe: secrets, personal data, sign-in and payments done the safe way. |
+| security-basics | Keeps the people using it safe: secrets, personal data, sign-in and payments done the safe way. |
 | writing | Clear, true words in the app, on the website and in the docs. |
 
 Your project keeps its memory in `docs/`: why it exists, how it works and what was decided, each decision with its date and reason. The AI reads it first and keeps it true.

@@ -1,5 +1,5 @@
 ---
-name: security
+name: security-basics
 description: Build it so the people using it are safe, on any stack: what could go wrong for whom, where secrets live, what personal data leaves the device, sign-in and payments done the safe way. Use when someone says "keep my users' data safe", "where do I put the API key", "add sign-in", "add login", "take payments", "add a subscription", "store their emails", "send this to a server", "is this safe to build", or when a change touches sign-in, payments, personal data, secrets or what leaves the device. To check a finished project ("is it secure?"), `review` runs its security lens.
 ---
 

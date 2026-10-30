@@ -14,7 +14,7 @@ The free plugin gains five **craft skills**, each about one discipline on any st
 - `brand` — logo mark and wordmark as SVG, an app icon, and a brand board page.
 - `design-system` — colours by job light and dark, type scale, spacing, corners, icons, core parts and their states. Step 2 of `design`, moved out and kept simple.
 - `accessibility` — contrast, text that grows, screen reader labels, focus, motion, touch size, colour never alone, plain errors.
-- `security` — who could be hurt, where secrets live, what personal data leaves the device, sign-in and payments.
+- `security-basics` — who could be hurt, where secrets live, what personal data leaves the device, sign-in and payments.
 - `writing` — the voice, plain words, true claims, buttons, errors and confirmations, docs, no AI tics.
 
 `design` stays the orchestrator after the interview: direction → brand → design system → screens → system picture. Craft skills are routed, never called by name: other skills (`design`, `review`, `plan`, `brief`, `go`) load them when a change touches what they cover, and their descriptions catch requests made directly.

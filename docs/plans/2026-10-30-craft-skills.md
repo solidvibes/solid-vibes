@@ -8,7 +8,7 @@ status: implemented
 **Touches**: `docs/how-it-works/design.md`, `docs/how-it-works/craft-skills.md`, `skills/review/lenses/security.md`
 
 ## TL;DR
-- Five new free skills: `brand`, `design-system`, `accessibility`, `security`, `writing`.
+- Five new free skills: `brand`, `design-system`, `accessibility`, `security-basics`, `writing`.
 - Each says how to do one discipline well, on any stack: the basics everyone should get right.
 - `design` stays the orchestrator: direction → brand → design system → screens → system picture.
 - `design-system` is today's design Step 2, moved out; it writes `docs/design/system.md` in the same shape.
@@ -36,7 +36,7 @@ flowchart LR
   DS -. uses .-> A[accessibility]
   BR[brief / go / plan] -. what people see .-> A
   BR -. what people see .-> W[writing]
-  BR -. sign-in, payments, personal data .-> SEC[security]
+  BR -. sign-in, payments, personal data .-> SEC[security-basics]
   R[review] -. lens .-> A
   R -. lens .-> SEC
 ```
@@ -51,12 +51,12 @@ flowchart LR
 - `skills/brand/SKILL.md` — new.
 - `skills/design-system/SKILL.md` — new, from design Step 2.
 - `skills/accessibility/SKILL.md` — new.
-- `skills/security/SKILL.md` — new.
+- `skills/security-basics/SKILL.md` — new.
 - `skills/writing/SKILL.md` — new.
 - `skills/design/SKILL.md` — five steps, calls the craft skills.
 - `skills/review/SKILL.md` — accessibility lens row.
 - `skills/review/lenses/accessibility.md` — new, thin.
-- `skills/review/lenses/security.md` — reads the security skill's basics first.
+- `skills/review/lenses/security.md` — reads the security-basics skill's basics first.
 - `skills/brief/SKILL.md`, `skills/go/SKILL.md`, `skills/plan/SKILL.md` — one line each.
 - `setup/templates/AGENTS.md` — routing step naming the craft skills.
 - `setup/templates/docs/CONVENTIONS.md` — `design/` row adds `brand.md`.
