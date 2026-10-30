@@ -143,7 +143,7 @@ mkdir "$T/nojq"
 for d in /bin /usr/bin "$(dirname "$(command -v git)")"; do
   for f in "$d"/*; do
     n="$(basename "$f")"
-    [ "$n" = jq ] || [ -e "$T/nojq/$n" ] || ln -s "$f" "$T/nojq/$n"
+    [ "$n" = jq ] || [ -e "$T/nojq/$n" ] || [ -L "$T/nojq/$n" ] || ln -s "$f" "$T/nojq/$n"
   done
 done
 PATH="$T/nojq" command -v jq >/dev/null && fail "jq still on PATH"
