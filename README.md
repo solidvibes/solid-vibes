@@ -48,7 +48,9 @@ Using Codex or another agent? See [Other agents](#other-agents) below.
 
 ## What's inside
 
-Twelve skills. Each is a short instruction file the AI follows. You start five by name; the AI picks the other seven from what you say.
+Seventeen skills. Each is a short instruction file the AI follows. You start five by name; the AI picks the other twelve from what you say.
+
+Workflow skills say when to do what:
 
 | Skill | Started by | What it does |
 |---|---|---|
@@ -57,19 +59,29 @@ Twelve skills. Each is a short instruction file the AI follows. You start five b
 | bye | you, at the end of a session | Writes down where things stand and what was learned. |
 | release | you | Merges, deploys and publishes, one step at a time, each on your go. |
 | update | you, now and then | Brings tools and packages to their latest and proves the app still works. |
-| design | the AI, on a new app | The look: three directions to pick from, then colours, screens and one picture of how it works. |
+| design | the AI, on a new app | The look: three directions to pick from, then the brand, the design system, screens and one picture of how it works. |
 | brainstorm | the AI | Explores an unclear idea and the choices that are hard to undo. |
 | brief | the AI | One small, clear change, from idea to checked result. |
 | plan | the AI | A written plan in phases you approve. |
 | go | the AI | Builds an approved plan and stops at checked pull requests. |
-| review | the AI | A fresh AI reads the change, or the whole project through one lens: security, docs, speed or architecture. |
+| review | the AI | A fresh AI reads the change, or the whole project through one lens: security, accessibility, docs, speed or architecture. |
 | verify | the AI | Proves the change does what was asked, cheapest check first. |
+
+Craft skills say how to do one thing well, on any stack. The AI uses them inside the steps above:
+
+| Skill | What it does |
+|---|---|
+| brand | A logo, an app icon and a brand board that shows the look on real things. |
+| design-system | Colours for light and dark, type sizes, spacing and the core parts, built for everyone. |
+| accessibility | The basics that let everyone use it: contrast, text that grows, screen readers, touch size. |
+| security | Keeps the people using it safe: secrets, personal data, sign-in and payments done the safe way. |
+| writing | Clear, true words in the app, on the website and in the docs. |
 
 Your project keeps its memory in `docs/`: why it exists, how it works and what was decided, each decision with its date and reason. The AI reads it first and keeps it true.
 
 ## Pro
 
-Solid Vibes Pro adds ready-made rules for building Flutter apps with Supabase. It is a separate, paid plugin. Everything in this repo works without it.
+Solid Vibes Pro adds ready-made rules for building Flutter apps with Supabase, and goes deeper than the free basics: layouts for every screen size, a designer's review of each screen, and security checklists per stack. It is a separate, paid plugin. Everything in this repo works without it.
 
 ## Contact
 

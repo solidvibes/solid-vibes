@@ -31,6 +31,7 @@ Without sub-agents (see `.solidvibes/agents.md`), run every phase in this thread
 - Read the contract.
 - Load the contract's `rules` that match the work. `AGENTS.md` covers crosscutting invariants.
 - Read related plans where the contract's `plans` says they live (default `docs/plans/`), and the relevant behavior docs from `docs` (`docs/how-it-works/`, `docs/intent.md`, `docs/stack.md`). They are the source of truth for how the system works today.
+- When the work touches what people see or read, load the `accessibility` and `writing` skills; when it touches sign-in, payments, personal data or secrets, the `security` skill, whose Step 1 goes in `## Constraints`. Name them in `## Constraints` so the coder loads them too.
 - If `brainstorm` ran, its accepted scope card is the input: don't reopen its settled decisions.
 - If a parked idea in `docs/ideas/` matches the work, promote it: move it into the plans folder with today's date in front (`git mv docs/ideas/<slug>.md docs/plans/<YYYY-MM-DD>-<slug>.md`), set its `status: idea` to `status: draft`, and write the plan into that file.
 

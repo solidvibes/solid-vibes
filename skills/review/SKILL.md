@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review changes as a pull request reviewer would, against the plan, the project's rules, the contract's layers, tests and over-engineering; or look at the whole project through one lens (security, docs, speed, architecture). Use when someone says "review this", "check my changes", "is this ready", "look over what you did", "is it secure", "could someone steal my users' data", "are the docs still true", "is anything out of date", "why is it slow", "is the code in good shape", before a first release or a change to sign-in, payments or personal data, or when a phase or brief needs a quick verdict table from a fresh reviewer.
+description: Review changes as a pull request reviewer would, against the plan, the project's rules, the contract's layers, tests and over-engineering; or look at the whole project through one lens (security, accessibility, docs, speed, architecture). Use when someone says "review this", "check my changes", "is this ready", "look over what you did", "is it secure", "could someone steal my users' data", "can everyone use it", "are the docs still true", "is anything out of date", "why is it slow", "is the code in good shape", before a first release or a change to sign-in, payments or personal data, or when a phase or brief needs a quick verdict table from a fresh reviewer.
 ---
 
 # Review
@@ -27,6 +27,7 @@ A lens is one concern looked at closely. Each lives in `lenses/` next to this fi
 | Lens | When |
 |---|---|
 | `lenses/security.md` | "Is it secure?", before the first release, any change to sign-in, payments or stored personal data. Whole project unless a scope is named |
+| `lenses/accessibility.md` | "Can everyone use it?", a change to what people see or tap. Whole project unless a scope is named |
 | `lenses/docs.md` | "Are the docs still true?", after `go`'s last phase, before a release |
 | `lenses/speed.md` | Something feels slow, or a change touches a list, a query, sync or startup |
 | `lenses/architecture.md` | "Is the code in good shape?", a change that adds a part or crosses layers |

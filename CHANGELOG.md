@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- Five new craft skills (brand, design system, accessibility, security, writing) teach the basics of each on any stack, and a new app's look now includes a logo, an app icon and a brand board.
 - An approved plan starts building right away while the conversation is short; otherwise it names the exact `go` command to paste after /clear.
 - Saying go in a fresh session finds the approved plan, even one kept in a private folder git ignores.
 - Every pull request runs the tests on GitHub before it can be merged.

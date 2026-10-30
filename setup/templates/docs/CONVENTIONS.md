@@ -11,7 +11,7 @@ The `docs/` folder is the source of truth for how this project works. Read it an
 | `stack.md` | The tech choices, each with why | `interview`; changing a choice is a decision |
 | `how-it-works/<part>.md` | How one part behaves today, with a status line | `plan` (Planned), `go` and `brief` (Built, in the same change) |
 | `direction/` | The vision and where it is going. Not a commitment | `interview`, `brainstorm` |
-| `design/` | The look: `direction.md`, `system.md` (the source of the app's theme), `screens.md` with the system picture | `design`; changing an approved step is a decision |
+| `design/` | The look: `direction.md`, `brand.md` with the logo files in `brand/`, `system.md` (the source of the app's theme), `screens.md` with the system picture | `design`, `brand`, `design-system`; changing an approved step is a decision |
 | `decisions/YYYY-MM-DD-<slug>.md` | One hard-to-undo call each: context, decision, why, alternatives, who decided | `interview`, `brainstorm`, `plan`, `bye` |
 | `plans/`, `ideas/` | Plans with a `status:` line at the top; parked ideas | `plan`, `go`; an idea is one paragraph in `ideas/` |
 | `../CHANGELOG.md` | One plain sentence per change people notice, under `## Unreleased` | `brief`, `go` |
