@@ -96,4 +96,4 @@ Say what happens next ("Now I'll write down how the project gets built and check
 
 ## Visuals
 
-"Show a visual" means: as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is.
+"Show a visual" means: make the page with the `eli-solid` skill and show it as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is.

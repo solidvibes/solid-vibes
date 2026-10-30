@@ -72,4 +72,4 @@ With Pro: the `ui` pack adds a design craft review (hierarchy, alignment, densit
 
 ## Visuals
 
-"Show a visual" means: as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Pages use the approved direction's look. The SVGs are inlined on the page, so what they approve is what gets saved. Without HTML, save the SVG files and list them with one line each.
+"Show a visual" means: make the page with the `eli-solid` skill and show it as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Pages use the approved direction's look. The SVGs are inlined on the page, so what they approve is what gets saved. Without HTML, save the SVG files and list them with one line each.

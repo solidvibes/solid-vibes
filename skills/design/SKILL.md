@@ -83,4 +83,4 @@ After Step 5 is approved, say one line ("Next I'll plan the first version, built
 
 ## Visuals
 
-"Show a visual" means: as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Follow the page rule in `AGENTS.md` (`## Visuals`). Until Step 1 is approved, pages use the Solid Vibes look; from then on, the approved direction. Without HTML, draw palettes as tables with hex values, screens as boxes in Mermaid, and the system picture as Mermaid.
+"Show a visual" means: make the page with the `eli-solid` skill and show it as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Until Step 1 is approved, pages use the `eli-solid` default look; from then on, the approved direction. Without HTML, draw palettes as tables with hex values, screens as boxes in Mermaid, and the system picture as Mermaid.

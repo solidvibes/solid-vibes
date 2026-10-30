@@ -7,7 +7,7 @@
 ## Where the settings live
 
 - `setup/agents/<agent>.md` in this repo: one table row and one section per agent. Not a top-level `agents/` folder, because a plugin's `agents/` folder is loaded as Claude Code sub-agents.
-- `solidvibes init --agents claude,codex,generic` copies the rows and sections in use into the project's `.solidvibes/agents.md` (generated). The visuals rule in `AGENTS.md` points there.
+- `solidvibes init --agents claude,codex,generic` copies the rows and sections in use into the project's `.solidvibes/agents.md` (generated). The visuals block in `AGENTS.md` points there. The profile says how a visual is shown; the `eli-solid` skill says how it is made. A project's `## Look` section (in `AGENTS.md` outside the generated blocks, or in `CLAUDE.md`) is project data that sets the page's look.
 - Without that file (before `init` ran), skills write a local HTML file for a visual.
 - A new agent is a new profile file.
 

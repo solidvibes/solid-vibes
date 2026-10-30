@@ -39,4 +39,4 @@ With Pro: the `security` pack adds stack rules and checklists (secret scanning, 
 
 ## Visuals
 
-"Show a visual" means: as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Step 1 is drawn as a picture of the real things (phone, server, each outside service) with what personal data travels along each arrow, and the basic that protects it.
+"Show a visual" means: make the page with the `eli-solid` skill and show it as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Step 1 is drawn as a picture of the real things (phone, server, each outside service) with what personal data travels along each arrow, and the basic that protects it.

@@ -73,7 +73,7 @@ If anything is open or the goal is fuzzy, stop and wait. The user answers per it
 
 ## Visuals
 
-"Show a visual" means: as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Decision visuals compare the options side by side; flow and screen visuals draw each state separately.
+"Show a visual" means: make the page with the `eli-solid` skill and show it as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. Decision visuals compare the options side by side; flow and screen visuals draw each state separately.
 
 ## At the end
 
