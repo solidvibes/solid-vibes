@@ -43,4 +43,4 @@ With Pro: the `ui` pack adds an accessibility checklist run over every changed s
 
 ## Visuals
 
-"Show a visual" means: as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. A failed basic is shown as the screen before and after the fix, side by side, with the contrast numbers or the sizes written under each.
+"Show a visual" means: make the page with the `eli-solid` skill and show it as `.solidvibes/agents.md` says for the agent in use. If that file is missing, write a local HTML file and tell the user where it is. A failed basic is shown as the screen before and after the fix, side by side, with the contrast numbers or the sizes written under each.

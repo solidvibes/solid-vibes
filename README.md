@@ -48,7 +48,7 @@ Using Codex or another agent? See [Other agents](#other-agents) below.
 
 ## What's inside
 
-Seventeen skills. Each is a short instruction file the AI follows. You start five by name; the AI picks the other twelve from what you say.
+Eighteen skills. Each is a short instruction file the AI follows. You start five by name; the AI picks the other thirteen from what you say.
 
 Workflow skills say when to do what:
 
@@ -76,6 +76,7 @@ Craft skills say how to do one thing well, on any stack. The AI uses them inside
 | accessibility | The basics that let everyone use it: contrast, text that grows, screen readers, touch size. |
 | security-basics | Keeps the people using it safe: secrets, personal data, sign-in and payments done the safe way. |
 | writing | Clear, true words in the app, on the website and in the docs. |
+| eli-solid | Pages that explain a change or put a decision to you: big pictures, few words, in your app's look. |
 
 Your project keeps its memory in `docs/`: why it exists, how it works and what was decided, each decision with its date and reason. The AI reads it first and keeps it true.
 

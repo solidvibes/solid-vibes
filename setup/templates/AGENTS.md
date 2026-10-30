@@ -58,7 +58,7 @@ Every conversation runs this way. No command needed.
 5. **Building ends at green pull requests.** Merging, deploying and store releases go through `release`, and only on the owner's go, one step at a time.
 6. **Keep the handover current.** After a brief, a plan approval or a green pull request, update `.solidvibes/handover.md`: one line each under Done, Open and Next. Leave its `## Snapshot` section as it is.
 7. **Follow the stack packs.** When `docs/stack.md` lists packs under `## Packs`, load the skill of each pack that covers the files you touch and apply its `## Overrides`. Local overrides win; say in one line when you apply one.
-8. **Do each craft well.** The craft skills say how to do one discipline well on any stack: `brand` (logo, app icon, brand board), `design-system` (colours, type, parts), `accessibility` (everyone can use it), `security-basics` (sign-in, payments, personal data, secrets), `writing` (words people read). Follow the one that covers the work, inside whichever step above handles it.
+8. **Do each craft well.** The craft skills say how to do one discipline well on any stack: `brand` (logo, app icon, brand board), `design-system` (colours, type, parts), `accessibility` (everyone can use it), `security-basics` (sign-in, payments, personal data, secrets), `writing` (words people read), `eli-solid` (every page that explains or decides something). Follow the one that covers the work, inside whichever step above handles it.
 
 Each backticked name is a skill. An agent without a skill loader reads it at `~/.agents/skills/<name>/SKILL.md`, where `solidvibes install` put it.
 
@@ -79,13 +79,7 @@ Show visuals for decisions, flows and screens. Every decision gets one.
 
 How depends on the agent: `.solidvibes/agents.md` says what each agent in use shows (a published page, a local HTML file, or a diagram in the chat). If that file is missing, write a local HTML file and say where it is.
 
-Every page follows the same rule:
-
-- **Picture first.** Text comes after, and at most 3 short lines per box.
-- **Every term explained.** One plain line for each: what it is, why it's here.
-- **Options side by side** in a table: what you get, what it costs later, the recommended one marked.
-- **A system picture shows real things** (phone, server, outside services) with data moving along the arrows. In HTML, animate it with CSS only and show one line per part on hover or tap. Without HTML, draw it as Mermaid.
-- **The look.** Once `docs/design/` exists, pages use the app's look. Until then, the Solid Vibes look: warmer colour, bolder type, simple icons.
+Every page is made with the `eli-solid` skill: it holds the method and the look. A short `## Look` section elsewhere in this file or in `CLAUDE.md` (one line, such as "accent #0055AA, headings in Georgia") sets this project's look.
 <!-- solidvibes:end visuals -->
 
 ## Working style

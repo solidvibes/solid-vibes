@@ -6,3 +6,4 @@ tests/strip_check.sh    # plants fake keys and owner paths on purpose, in a temp
 tests/cli_lint.sh       # plants owner paths in temp skills on purpose
 README.md:email          # the public contact address, on purpose
 .github/workflows/checks.yml:email  # the placeholder git identity tests commit with in CI
+README.md:denylist:email  # the public contact address, on purpose
