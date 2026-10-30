@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- An approved plan starts building right away while the conversation is short; otherwise it names the exact `go` command to paste after /clear.
 - Saying go in a fresh session finds the approved plan, even one kept in a private folder git ignores.
 - Every pull request runs the tests on GitHub before it can be merged.
 - Saying "I want to build …" starts a conversation about the problem, who it is for and what it must never do, then sets the project up so every later request goes to the right step.

@@ -1,7 +1,7 @@
 {
   "name": "sv",
   "displayName": "Solid Vibes",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A calm way to build software with an AI: interview, plan, go, review, verify, release.",
   "author": { "name": "Stojanov Ventures" },
   "repository": "https://github.com/solidvibes/solid-vibes",
