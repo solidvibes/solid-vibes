@@ -1,9 +1,9 @@
 ---
-name: eli-solid
-description: Make a page that explains or decides something: big pictures, few words, in the app's own look. Use when a skill says "show a visual", or someone asks for a page or a picture, like "explain this as a page", "draw how it works", "show the options side by side", "make a decision page", "mock up this screen", "summarise the plan as a page". A plain "how does X work?" gets an answer in words, not a page.
+name: visual
+description: Make a page that explains or decides something: big pictures, few words, in the app's own look. Use when a skill says "show a visual", or someone asks for a page, a picture or a visual, like "show me a visual", "make it visual", "explain this as a page", "draw how it works", "show the options side by side", "make a decision page", "mock up this screen", "summarise the plan as a page". A plain "how does X work?" gets an answer in words, not a page.
 ---
 
-# Eli Solid
+# Visual
 
 Makes the pages Solid Vibes shows: one method for every explanation, decision, plan summary and mockup, in the app's own look.
 
