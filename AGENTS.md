@@ -52,7 +52,7 @@ Solid Vibes is a setup for builders. Anyone can be a builder. Skills are written
 - **checks** — fast: `bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh` · full: `bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh --history && tests/run.sh && (if command -v claude >/dev/null; then claude plugin validate .; else echo "claude CLI absent: plugin validate skipped"; fi)`
 - **codegen** — none
 - **run** — `bin/solidvibes init --profile setup/profiles/blank tests/.tmp/demo` then run the demo's contract `checks`; in Claude: `/plugin marketplace add ./` and `/plugin install sv@solid-vibes` in a scratch folder under the scratchpad
-- **plans** — `docs/plans/YYYY-MM-DD-<slug>.md`
+- **plans** — `docs/plans/YYYY-MM-DD-<slug>.md` (private, git-excluded)
 - **docs** — behavior: `docs/how-it-works/`, `README.md` · decisions: `docs/decisions/` · changelog: `CHANGELOG.md` under `## Unreleased`, one plain sentence
 - **rules** — always-on: `AGENTS.md`
 - **risk** — `lib/cli-run.sh` sandbox grants, `profiles/solidvibes.json`, anything that deletes (`worktrees --clean`, `init` refresh), `scripts/strip-check.sh`, `.gitleaks.toml` allowlist
