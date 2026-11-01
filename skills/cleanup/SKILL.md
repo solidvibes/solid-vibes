@@ -32,11 +32,11 @@ Run `solidvibes disk --tsv --projects <dir>` (no `--projects` when skipped). Rea
 
 ## 2. Show the list
 
-Number the `safe` and `your-call` rows, biggest first, one line each: name, size, why it is safe, what it costs. Use the table below for the words; use the row's `kb` for the size, in GB or MB. `your-call` rows say so and say what is lost.
+Number the `safe` and `your-call` rows, except `sim:` and `runtime:` rows (step 3 groups them), biggest first, one line each: name, size, why it is safe, what it costs. Use the table below for the words; use the row's `kb` for the size, in GB or MB. `your-call` rows say so and say what is lost.
 
 | id | Say |
 |---|---|
-| `worktrees` | Finished working copies of your projects. The work is already saved; the branches stay. |
+| `worktrees` | Finished side copies of your projects. The work in them is already saved elsewhere; nothing is lost. |
 | `build:<repo>` | Build folders in `<repo>`. The tools make them again; the next build is slower. |
 | `deriveddata` | Xcode's build leftovers. Xcode makes them again; the next build is slower. |
 | `gradle` | Android build downloads. They download again on the next Android build. |
@@ -47,7 +47,7 @@ Number the `safe` and `your-call` rows, biggest first, one line each: name, size
 | `homebrew` | Old downloads and old versions of tools installed with Homebrew. Current versions stay. |
 | `sim-unavailable` | Simulators Xcode can no longer start. Nothing uses them. |
 | `avd:<name>` | The Android emulator `<name>`, with its apps and data. Making it again is by hand. (Your call.) |
-| `devicesupport:<build>` | Xcode's files for a phone on iOS `<build>`. Xcode copies them again when such a phone connects; that takes a while. (Your call.) |
+| `devicesupport:<build>` | Xcode's files for phones on iOS `<version>` (the version in the item, not the id). Xcode copies them again when such a phone connects; that takes a while. (Your call.) |
 
 Rows with class `keep` are not numbered. Put them in a short "Left alone" list with the reason: `archives` ("needed to read crash reports of apps you shipped"), `ollama` ("downloaded AI models"), the newest DeviceSupport, a running simulator or emulator, a runtime Xcode won't let go. The note says why. One more line: "Docker isn't checked; look at `docker system df` or Docker Desktop yourself."
 
@@ -55,12 +55,12 @@ End the list with the free space from `# free` ("<size> free on this computer") 
 
 ## 3. Simulators
 
-Do not number each simulator. Group them:
+Do not number each simulator. Group them into two numbered lines:
 
 - **Old simulators (N)**: every `sim:` row with class `your-call`, except the ones to keep. Say the size of the group and that apps and data inside them are lost.
-- **Runtimes no one needs (N)**: every `runtime:` row with class `your-call` that no simulator uses, or whose users are all in the group (its note says `used by N simulator(s)`). It is a big download to get back. A runtime a kept simulator uses stays out; say so.
+- **Runtimes no one needs (N)**: every `runtime:` row with class `your-call` that no simulator uses, or whose users are all in the group. The note says `used by N simulator(s)`; a `sim:` row uses the runtime named after the comma in its item (`<name>, iOS-18-0` uses `iOS-18-0 runtime`). It is a big download to get back. A runtime a kept simulator uses stays out; say so.
 
-Keep the newest iPhone and the newest iPad. The note of a `sim:` row says `<type>, newest runtime for type` when its runtime is the newest that supports that device. Pick the newest model among those rows, one for iPhone and one for iPad. Never assume the newest runtime has every device. Name the two in the line: "Keeping the <name> and the <name>."
+Keep the newest iPhone and the newest iPad. The note of a `sim:` row says `<type>, newest runtime for type` when its runtime is the newest that supports that device. Pick the newest model among those rows, one for iPhone and one for iPad. Never assume the newest runtime has every device. Name the two in the line: "Keeping the <name> and the <name>." No such iPhone or iPad: say none of that kind is kept.
 
 The owner can add more: "keep the <name> too" moves that simulator out of the group. Redo the line and the sizes. Nothing to group (no `sim:` rows): leave the group out.
 
@@ -71,7 +71,7 @@ Ask once: `all`, `none`, or the numbers ("1, 3, 5"). Say what each means:
 - Other `your-call` lines (`pub`, `avd`, `devicesupport`) go only when named by number.
 - `none`: stop here, nothing is deleted.
 
-Anything else, a mix, or a number that isn't on the list: ask again. Offer once to show the list as a page (the `visual` skill); the chat list is the default.
+Anything else ("all but 3", a number that isn't on the list): ask again. Offer once to show the list as a page (the `visual` skill); the chat list is the default.
 
 ## 5. Delete
 
@@ -79,7 +79,7 @@ Say the full list of what will go and its size. Then map the numbers to ids and 
 
 `solidvibes disk --clean <id>… --projects <dir>`
 
-The group expands to every `sim:` and `runtime:` id in it. The command asks Claude Code for one approval; that is the only question. The command re-checks everything and refuses what changed since the list.
+Leave out `--projects` when step 1 did. A group expands to every `sim:` or `runtime:` id in it. Claude Code may ask the owner to approve this one command; that is the only question. The command re-checks everything and refuses what changed since the list.
 
 Blocked by the sandbox: say so, ask the owner to allow that one command, or to run it in their own Terminal. Nothing else.
 

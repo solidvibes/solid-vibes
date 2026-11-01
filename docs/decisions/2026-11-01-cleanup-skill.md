@@ -1,7 +1,7 @@
 # The cleanup skill
 
 **Date:** 2026-11-01
-**Who decided:** mine (called by name and routed; the owner says "cleanup"; answers `all`, `none` or numbers); agent's, hard to undo (the CLI does every delete)
+**Who decided:** mine (called by name and routed; the owner says "cleanup"; answers `all`, `none` or numbers); agent's (the CLI does every delete)
 
 ## Context
 

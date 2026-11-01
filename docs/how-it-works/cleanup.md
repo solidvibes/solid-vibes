@@ -72,7 +72,7 @@ solidvibes disk --clean <id>… [--projects <dir>]    delete those ids, then pri
 
 Called by name, and routed from "my disk is full" and "free up space". Works from any folder; needs no Factory contract.
 
-1. **Look**: finds the projects folder (`$SOLIDVIBES_PROJECTS_DIR`, else the folder holding the current repo when it holds other repos, else asks), runs `solidvibes disk --tsv`.
+1. **Look**: finds the projects folder (`$SOLIDVIBES_PROJECTS_DIR`, else the folder holding the current repo when it holds other repos, else asks), runs `solidvibes disk --tsv --projects <dir>`.
 2. **List**: a numbered list, biggest first: name, size, why it is safe, what it costs. `keep` rows go in an un-numbered "Left alone" list with the reason. One line points to Docker, which is not scanned.
 3. **Simulators** are one group. The newest iPhone and the newest iPad are kept, each on the newest runtime that supports it (from the CLI's notes); the owner can add more by name. A second line covers the runtimes no one then needs.
 4. **Ask**: `all`, `none` or numbers. `all` is the safe lines plus the simulator group; other your-call lines go only by number. An unclear answer is asked again. A page is offered once; chat is the default.
