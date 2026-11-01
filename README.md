@@ -48,7 +48,7 @@ Using Codex or another agent? See [Other agents](#other-agents) below.
 
 ## What's inside
 
-Eighteen skills. Each is a short instruction file the AI follows. You start five by name; the AI picks the other thirteen from what you say.
+Nineteen skills. Each is a short instruction file the AI follows. You start six by name; the AI picks the other thirteen from what you say.
 
 Workflow skills say when to do what:
 
@@ -59,6 +59,7 @@ Workflow skills say when to do what:
 | bye | you, at the end of a session | Writes down where things stand and what was learned. |
 | release | you | Merges, deploys and publishes, one step at a time, each on your go. |
 | update | you, now and then | Brings tools and packages to their latest and proves the app still works. |
+| cleanup | you | Frees disk space: lists what takes space, says what each costs, and deletes only what you pick. |
 | design | the AI, on a new app | The look: three directions to pick from, then the brand, the design system, screens and one picture of how it works. |
 | brainstorm | the AI | Explores an unclear idea and the choices that are hard to undo. |
 | brief | the AI | One small, clear change, from idea to checked result. |

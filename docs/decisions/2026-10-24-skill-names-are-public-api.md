@@ -24,3 +24,5 @@ One skill per concern, such as a separate security audit or docs check (more nam
 ## What it means
 
 A new skill is cheap; a rename or removal needs a new decision and a note in the changelog. Codex and other agents rerun `solidvibes install` after a rename; it names links left by removed skills and deletes none. `solidvibes lint` fails when a skill or the routing template names a skill that does not exist.
+
+Update 2026-11-01: `cleanup` joins the skills called by name, see `2026-11-01-cleanup-skill.md`.

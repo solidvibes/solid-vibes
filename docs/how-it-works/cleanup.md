@@ -1,8 +1,8 @@
 # Cleanup
 
-**Status:** Planned. The CLI is built and tested here; the `cleanup` skill is not built yet.
+**Status:** Built. The CLI is tested here; a real run of the skill on a Mac is owner-checked, not tested here.
 
-> Free disk space on the owner's computer. The CLI finds what takes space and does every delete, with its own guards; the skill (to come) explains each item in plain words and asks which ones go. Agent-typed `rm` is never the way: Claude Code denies it, and it has no guards.
+> Free disk space on the owner's computer. The CLI finds what takes space and does every delete, with its own guards; the skill explains each item in plain words and asks which ones go. Agent-typed `rm` is never the way: Claude Code denies it, and it has no guards.
 
 ## The CLI
 
@@ -67,3 +67,16 @@ solidvibes disk --clean <id>… [--projects <dir>]    delete those ids, then pri
 - Each item prints `removed <id>  <size>`, or `failed <id>: <first line of the tool's error>` (`kept` / `skipped` for the runtime and Gradle cases). A failure never stops the others and never triggers a fallback: no `rm` after a tool fails, no `sudo`, no `chmod`.
 - `worktrees` fails when any worktree removal failed.
 - Ends with `free before <size>, after <size>, freed <size>` from `df -k "$HOME"`; exits 1 when any item failed.
+
+## The skill
+
+Called by name, and routed from "my disk is full" and "free up space". Works from any folder; needs no Factory contract.
+
+1. **Look**: finds the projects folder (`$SOLIDVIBES_PROJECTS_DIR`, else the folder holding the current repo when it holds other repos, else asks), runs `solidvibes disk --tsv`.
+2. **List**: a numbered list, biggest first: name, size, why it is safe, what it costs. `keep` rows go in an un-numbered "Left alone" list with the reason. One line points to Docker, which is not scanned.
+3. **Simulators** are one group. The newest iPhone and the newest iPad are kept, each on the newest runtime that supports it (from the CLI's notes); the owner can add more by name. A second line covers the runtimes no one then needs.
+4. **Ask**: `all`, `none` or numbers. `all` is the safe lines plus the simulator group; other your-call lines go only by number. An unclear answer is asked again. A page is offered once; chat is the default.
+5. **Delete**: one `solidvibes disk --clean <ids>` call. The skill never types `rm`, never runs the native tools, never uses `sudo`. If the sandbox blocks the call, the owner allows it or runs it in their Terminal.
+6. **Report**: freed, free before and after, one line per failure with where to fix it by hand (a simulator: Xcode, Window, Devices and Simulators).
+
+Decision: [the cleanup skill](../decisions/2026-11-01-cleanup-skill.md).

@@ -42,7 +42,7 @@ Solid Vibes is a setup for builders. Anyone can be a builder. Skills are written
 - Simplest approach that works. No speculative abstractions, feature flags or compat shims.
 - No comments unless the logic isn't self-evident.
 - Skill descriptions are trigger conditions ("Use when …") in the user's own phrases.
-- Only `interview`, `release`, `hello`, `bye`, `update` are called by name; the rest are routed.
+- Only `interview`, `release`, `hello`, `bye`, `update`, `cleanup` are called by name; the rest are routed.
 - Deterministic work in the CLI, judgment in the skill.
 - No `~/.claude` paths in skills; they cite `.solidvibes/factory-contract.md` in the project.
 

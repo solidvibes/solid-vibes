@@ -1,5 +1,5 @@
 # One case per line: request<TAB>expected route. # starts a comment.
-# Routes: interview design brainstorm brief plan several review idea release hello bye update trivial
+# Routes: interview design brainstorm brief plan several review idea release hello bye update cleanup trivial
 I'm a dentist and want my patients to book online	interview
 I want to build an app that helps me keep track of my students' homework	interview
 I have an idea for a little website for my bakery	interview
@@ -43,3 +43,7 @@ Update everything	update
 Can you upgrade Flutter and all the packages to the latest versions?	update
 Bring the repo up to date, it has been a while	update
 Update the docs, they still describe the old sign-up	brief
+My disk is full, can you help?	cleanup
+Free up some space on my Mac	cleanup
+Clean up the disk, delete what is safe	cleanup
+Clean up the messy code in the settings screen	brief

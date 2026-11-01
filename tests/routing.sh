@@ -17,7 +17,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 CASES="${1:-$ROOT/tests/routing/cases.txt}"
 AGENT="${SOLIDVIBES_ROUTING_AGENT:-claude -p}"
 THRESHOLD=90
-ROUTES="interview design brainstorm brief plan several review idea release hello bye update trivial"
+ROUTES="interview design brainstorm brief plan several review idea release hello bye update cleanup trivial"
 
 T="$(mktemp -d)"
 trap 'rm -rf "$T"' EXIT
