@@ -20,11 +20,21 @@
 
 WT_IDLE_SECS=$((24 * 3600))
 WT_BUILD_DIRS=" build .dart_tool node_modules Pods .gradle .cxx "
-WT_ROWS=""
-WT_TOTAL_KB=0
-WT_REMOVABLE_KB=0
-WT_FREED_KB=0
-WT_REMOVED=0
+
+wt_init() {
+  WT_NOW="$(date +%s)"
+  WT_HERE="$(pwd -P)"
+  WT_NONO_PS=""
+  if command -v nono >/dev/null 2>&1; then
+    WT_NONO_PS="$(nono ps --json 2>/dev/null || true)"  # plain `nono ps` truncates names
+  fi
+  WT_ROWS=""
+  WT_TOTAL_KB=0
+  WT_REMOVABLE_KB=0
+  WT_FREED_KB=0
+  WT_REMOVED=0
+  WT_FAILED=0
+}
 
 wt_human() { # KiB → 1.2G
   awk -v k="$1" 'BEGIN { split("K M G T", u); i = 1
@@ -174,6 +184,7 @@ wt_sweep() {
         WT_FREED_KB=$((WT_FREED_KB + kb)); WT_REMOVED=$((WT_REMOVED + 1))
       else
         echo "failed  $repo_name/$rel" >&2
+        WT_FAILED=$((WT_FAILED + 1))
       fi
     else
       kb="$(wt_size_kb "$wt")"
@@ -202,12 +213,7 @@ cli_worktrees() {
   fi
   [ -d "$root" ] || { echo "error: not a directory: $root" >&2; return 1; }
 
-  WT_NOW="$(date +%s)"
-  WT_HERE="$(pwd -P)"
-  WT_NONO_PS=""
-  if command -v nono >/dev/null 2>&1; then
-    WT_NONO_PS="$(nono ps --json 2>/dev/null || true)"  # plain `nono ps` truncates names
-  fi
+  wt_init
 
   if git -C "$root" rev-parse --git-dir >/dev/null 2>&1; then
     wt_sweep "$root"
@@ -231,4 +237,5 @@ cli_worktrees() {
     echo
     echo "total $(wt_human "$WT_TOTAL_KB"), removable $(wt_human "$WT_REMOVABLE_KB") — solidvibes worktrees --clean removes the rows marked remove"
   fi
+  [ "$WT_FAILED" -eq 0 ]
 }

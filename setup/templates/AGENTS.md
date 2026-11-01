@@ -43,6 +43,7 @@ Every conversation runs this way. No command needed.
 | Clear and small: one obvious approach, a few files | `brief` (as a sub-agent when the agent has them) |
 | "Update the docs" | `brief` |
 | "Update everything", "upgrade Flutter", "bring the repo up to date": the tools and packages | `update` |
+| "My disk is full", "free up space", "clean up disk": space on this computer | `cleanup` |
 | Clear but large or several steps | `plan`; after approval, `/clear`, then `go` |
 | Several ideas at once | one `brief` or `plan` per stream, one batched decision gate, then `go` for all of them |
 | "Is it secure?", before a first release, or a change to sign-in, payments or personal data | `review` with the security lens, on the whole project |

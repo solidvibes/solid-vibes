@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- Saying "cleanup" or "my disk is full" lists what takes space on your computer with its size and what it costs, and deletes only what you pick.
 - The page skill is now called `visual` (`/sv:visual`); with Codex, run `solidvibes install` again and remove the old link it names.
 - A new `eli-solid` skill makes every page Solid Vibes shows the same way, picture first with real names and open questions flagged, in the app's own colours and fonts.
 - Five new craft skills (brand, design system, accessibility, security, writing) teach the basics of each on any stack, and a new app's look now includes a logo, an app icon and a brand board.
