@@ -10,7 +10,7 @@ Knowledge lives in `docs/`: decisions in `docs/decisions/`, behavior in `docs/ho
 - **Behavior here, data in the project.** Skills, formats and scripts live here and are the same everywhere. What varies per project lives in that project (`AGENTS.md`, `docs/`, `.solidvibes/`).
 - **Generated vs seeded.** Every file `init` writes is one or the other. Generated files are owned here, carry a header naming the refresh, and are overwritten on every run; never edit them in a project. Seeded files are created only if missing and never touched again. If you cannot say which a new file is, it is seeded.
 - **Init creates; it never fixes.** It does not reorganize, migrate or correct an existing structure, and it never deletes. The one exception is moving a `## Factory` from `CLAUDE.md` into `AGENTS.md`, and only after the user says yes.
-- **Anything that deletes is a risk area.** `worktrees --clean` removes only what is provably finished, without `--force`, and never deletes branches. When in doubt, it stays.
+- **Anything that deletes is a risk area.** `worktrees --clean` removes only what is provably finished, without `--force`, and never deletes branches. `disk --clean` re-scans and re-checks every guard at delete time, refuses an id it can't re-find or that is `keep`, and never falls back after a tool refuses. Deleting goes through a CLI command with its own guards, never an agent-typed `rm`. When in doubt, it stays.
 - **Plugin hooks act only in projects with `.solidvibes/manifest.json`.** Anywhere else they exit 0 and write nothing. They never block.
 - **Bash for the CLI.** No runtime to install; works on a fresh macOS or Linux machine, including the bash 3.2 macOS ships.
 
@@ -55,7 +55,7 @@ Solid Vibes is a setup for builders. Anyone can be a builder. Skills are written
 - **plans** — `docs/plans/YYYY-MM-DD-<slug>.md` (private, git-excluded)
 - **docs** — behavior: `docs/how-it-works/`, `README.md` · decisions: `docs/decisions/` · changelog: `CHANGELOG.md` under `## Unreleased`, one plain sentence
 - **rules** — always-on: `AGENTS.md`
-- **risk** — `lib/cli-run.sh` sandbox grants, `profiles/solidvibes.json`, anything that deletes (`worktrees --clean`, `init` refresh), `scripts/strip-check.sh`, `.gitleaks.toml` allowlist
+- **risk** — `lib/cli-run.sh` sandbox grants, `profiles/solidvibes.json`, anything that deletes (`worktrees --clean`, `disk --clean`, `init` refresh), `scripts/strip-check.sh`, `.gitleaks.toml` allowlist
 - **ships** — Claude Code plugin, bash CLI (macOS, Linux)
 - **sandbox** — none
 - **stack** — none

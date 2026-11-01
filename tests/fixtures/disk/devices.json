@@ -1,0 +1,112 @@
+{
+  "devices" : {
+    "com.apple.CoreSimulator.SimRuntime.iOS-99-0" : [
+      {
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000003\/data",
+        "dataPathSize" : 2097152,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000003",
+        "udid" : "00000000-0000-0000-0000-000000000003",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : true,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example-Pro",
+        "state" : "Booted",
+        "name" : "iPhone Example Pro"
+      },
+      {
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000008\/data",
+        "dataPathSize" : 1048576,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000008",
+        "udid" : "00000000-0000-0000-0000-000000000008",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : true,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Example",
+        "state" : "Shutdown",
+        "name" : "iPad Example"
+      }
+    ],
+    "com.apple.CoreSimulator.SimRuntime.iOS-98-0" : [
+      {
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000001\/data",
+        "dataPathSize" : 1048576,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000001",
+        "udid" : "00000000-0000-0000-0000-000000000001",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : true,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example",
+        "state" : "Shutdown",
+        "name" : "iPhone Example"
+      },
+      {
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000002\/data",
+        "dataPathSize" : 3145728,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000002",
+        "udid" : "00000000-0000-0000-0000-000000000002",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : true,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example-Pro",
+        "state" : "Shutdown",
+        "name" : "iPhone Example Pro"
+      },
+      {
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000004\/data",
+        "dataPathSize" : 1048576,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000004",
+        "udid" : "00000000-0000-0000-0000-000000000004",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : true,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Example",
+        "state" : "Shutdown",
+        "name" : "iPad Example"
+      },
+      {
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000006\/data",
+        "dataPathSize" : 1048576,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000006",
+        "udid" : "00000000-0000-0000-0000-000000000006",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : true,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example",
+        "state" : "Shutdown",
+        "name" : "iPhone Example (stuck)"
+      }
+    ],
+    "com.apple.CoreSimulator.SimRuntime.iOS-96-0" : [
+      {
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000007\/data",
+        "dataPathSize" : 1048576,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000007",
+        "udid" : "00000000-0000-0000-0000-000000000007",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : true,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example",
+        "state" : "Shutdown",
+        "name" : "iPhone Example"
+      }
+    ],
+    "com.apple.CoreSimulator.SimRuntime.iOS-90-0" : [
+      {
+        "availabilityError" : "runtime profile not found using “System” match policy",
+        "dataPath" : "\/home\/example\/Library\/Developer\/CoreSimulator\/Devices\/00000000-0000-0000-0000-000000000005\/data",
+        "dataPathSize" : 2097152,
+        "logPath" : "\/home\/example\/Library\/Logs\/CoreSimulator\/00000000-0000-0000-0000-000000000005",
+        "udid" : "00000000-0000-0000-0000-000000000005",
+        "lastUsedAt" : "2026-01-01T00:00:00Z",
+        "isAvailable" : false,
+        "logPathSize" : 4096,
+        "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example",
+        "state" : "Shutdown",
+        "name" : "iPhone Old"
+      }
+    ],
+    "com.apple.CoreSimulator.SimRuntime.watchOS-99-0" : [
+
+    ]
+  }
+}

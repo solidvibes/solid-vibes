@@ -116,6 +116,7 @@ Opinions about tools live in one stack profile, copied into the project as `docs
 - `solidvibes doctor [dir]` checks a project's setup and changes nothing.
 - `solidvibes lint <dir>` checks skills and plugin files.
 - `solidvibes worktrees [--clean] [path]` lists working copies and removes the finished ones.
+- `solidvibes disk [--tsv] [--projects <dir>] [--clean <id>…]` lists what takes space on this computer and deletes only the ids you name. [How it works](docs/how-it-works/cleanup.md).
 - `solidvibes run <plan|"task"> [--agent claude|codex|"<cmd>"] [--dry-run]` hands work to an agent in its own sandboxed copy. [How it works](docs/how-it-works/headless-run.md).
 - `solidvibes stop <slug>` stops a run.
 - `solidvibes install [nono]` links the skills for Codex and other agents, or the sandbox profile. Deletes nothing.

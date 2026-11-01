@@ -68,6 +68,15 @@ git show-ref -q --verify refs/heads/merged || fail "branches are never deleted"
 out="$("$SV" worktrees --clean)"
 [ "$out" = "worktrees: nothing to clean" ] || fail "second clean should find nothing: $out"
 
+git worktree add -q -b stuck "$T/wt-stuck"
+touch -t 202001010000 "$R/.git/worktrees/wt-stuck/index" "$R/.git/worktrees/wt-stuck/logs/HEAD"
+mkdir "$R/.git/worktrees/wt-stuck/modules"  # git refuses to remove a worktree with submodules
+if out="$("$SV" worktrees --clean 2>&1)"; then fail "a failed removal should exit non-zero: $out"; fi
+printf '%s\n' "$out" | grep -q "failed  repo/" || fail "the failure should be named: $out"
+[ -d "$T/wt-stuck" ] || fail "wt-stuck should still exist"
+rmdir "$R/.git/worktrees/wt-stuck/modules"
+git worktree remove "$T/wt-stuck"
+
 cd "$T"
 "$SV" worktrees >/dev/null 2>&1 && fail "outside a repo with no path should fail"
 out="$(SOLIDVIBES_PROJECTS_DIR="$T" "$SV" worktrees)"

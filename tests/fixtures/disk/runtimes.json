@@ -1,0 +1,97 @@
+{
+  "runtimes" : [
+    {
+      "isAvailable" : true,
+      "version" : "96.0",
+      "isInternal" : false,
+      "buildversion" : "96A100",
+      "supportedArchitectures" : [
+        "arm64"
+      ],
+      "supportedDeviceTypes" : [
+        {
+          "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Example.simdevicetype",
+          "name" : "iPhone Example",
+          "productFamily" : "iPhone",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example"
+        }
+      ],
+      "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-96-0",
+      "platform" : "iOS",
+      "runtimeRoot" : "\/Library\/Developer\/CoreSimulator\/Volumes\/iOS_96A100\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS 96.0.simruntime\/Contents\/Resources\/RuntimeRoot",
+      "lastUsage" : {
+        "arm64" : "2026-01-01T00:00:00Z"
+      },
+      "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Volumes\/iOS_96A100\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS 96.0.simruntime",
+      "name" : "iOS 96.0"
+    },
+    {
+      "isAvailable" : true,
+      "version" : "98.0",
+      "isInternal" : false,
+      "buildversion" : "98A100",
+      "supportedArchitectures" : [
+        "arm64"
+      ],
+      "supportedDeviceTypes" : [
+        {
+          "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Example.simdevicetype",
+          "name" : "iPhone Example",
+          "productFamily" : "iPhone",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example"
+        },
+        {
+          "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Example Pro.simdevicetype",
+          "name" : "iPhone Example Pro",
+          "productFamily" : "iPhone",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example-Pro"
+        },
+        {
+          "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Example.simdevicetype",
+          "name" : "iPad Example",
+          "productFamily" : "iPad",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Example"
+        }
+      ],
+      "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-98-0",
+      "platform" : "iOS",
+      "runtimeRoot" : "\/Library\/Developer\/CoreSimulator\/Volumes\/iOS_98A100\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS 98.0.simruntime\/Contents\/Resources\/RuntimeRoot",
+      "lastUsage" : {
+        "arm64" : "2026-01-01T00:00:00Z"
+      },
+      "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Volumes\/iOS_98A100\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS 98.0.simruntime",
+      "name" : "iOS 98.0"
+    },
+    {
+      "isAvailable" : true,
+      "version" : "99.0",
+      "isInternal" : false,
+      "buildversion" : "99A100",
+      "supportedArchitectures" : [
+        "arm64"
+      ],
+      "supportedDeviceTypes" : [
+        {
+          "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Example Pro.simdevicetype",
+          "name" : "iPhone Example Pro",
+          "productFamily" : "iPhone",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-Example-Pro"
+        },
+        {
+          "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Example.simdevicetype",
+          "name" : "iPad Example",
+          "productFamily" : "iPad",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Example"
+        }
+      ],
+      "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-99-0",
+      "platform" : "iOS",
+      "runtimeRoot" : "\/Library\/Developer\/CoreSimulator\/Volumes\/iOS_99A100\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS 99.0.simruntime\/Contents\/Resources\/RuntimeRoot",
+      "lastUsage" : {
+        "arm64" : "2026-01-01T00:00:00Z"
+      },
+      "bundlePath" : "\/Library\/Developer\/CoreSimulator\/Volumes\/iOS_99A100\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS 99.0.simruntime",
+      "name" : "iOS 99.0"
+    }
+  ]
+}
