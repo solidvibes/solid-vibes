@@ -41,12 +41,13 @@ disk_short() { printf '%s' "${1##*.}"; }  # com.apple.CoreSimulator.SimRuntime.i
 # its name must lie strictly under the canonical $HOME.
 disk_safe_path() {
   local home parent base
-  case "${HOME:-}" in ""|/) return 1 ;; esac
-  case "$1" in /*) ;; *) return 1 ;; esac
+  [ -n "${HOME:-}" ] || return 1
+  case "$1" in */) return 1 ;; /*) ;; *) return 1 ;; esac
   [ ! -L "$1" ] && [ -e "$1" ] || return 1
   base="$(basename "$1")"
   case "$base" in .|..|/) return 1 ;; esac
   home="$(cd "$HOME" 2>/dev/null && pwd -P)" || return 1
+  [ "$home" != / ] || return 1
   parent="$(cd "$(dirname "$1")" 2>/dev/null && pwd -P)" || return 1
   case "$parent/$base" in "$home"/?*) return 0 ;; esac
   return 1
@@ -135,8 +136,8 @@ disk_scan_deriveddata() {
 # and the repo (a nested repo or worktree is never build output).
 disk_build_output() { # <repo> <relative folder>
   local repo="$1" rel="$2" p
-  git -C "$repo" check-ignore -q -- "$rel" || return 1
-  [ -z "$(git -C "$repo" ls-files -- "$rel")" ] || return 1
+  git -C "$repo" check-ignore -q -- "./$rel" || return 1  # ./ so a name like :x is never pathspec magic
+  [ -z "$(git -C "$repo" ls-files -- "./$rel")" ] || return 1
   [ -z "$(find "$repo/$rel" -name .git -print 2>/dev/null | head -n 1)" ] || return 1
   p="$(dirname "$rel")"
   while [ "$p" != . ]; do
@@ -230,11 +231,15 @@ disk_scan_homebrew() { # brew prints e.g. "This operation would free approximate
 
 disk_scan_sims() {
   local runtimes newest udid rt type state avail kb name note class users n=0 total=0 latest
-  local uuid del
+  local uuid del raw devices_ok=false
   disk_darwin && command -v xcrun >/dev/null 2>&1 || return 0
   DISK_SIMCTL="$(xcrun --find simctl 2>/dev/null)" || return 0
   [ -n "$DISK_SIMCTL" ] || return 0
-  DISK_DEVICES="$("$DISK_SIMCTL" list -j devices 2>/dev/null | disk_simctl_read devices)" || DISK_DEVICES=""
+  # Runtimes are only deletable when every simulator was read: a missed one would lose its runtime.
+  if raw="$("$DISK_SIMCTL" list -j devices 2>/dev/null)" && [ -n "$raw" ]; then
+    DISK_DEVICES="$(printf '%s\n' "$raw" | disk_simctl_read devices)"
+    if [ "$(grep -c '"udid"' <<< "$raw")" = "$(grep -c . <<< "$DISK_DEVICES")" ]; then devices_ok=true; fi
+  fi
   runtimes="$("$DISK_SIMCTL" list -j runtimes 2>/dev/null | disk_simctl_read runtimes)" || runtimes=""
   DISK_IMAGES="$("$DISK_SIMCTL" runtime list -j 2>/dev/null | disk_simctl_read images)" || DISK_IMAGES=""
 
@@ -265,7 +270,9 @@ disk_scan_sims() {
     else note="$(disk_short "$type"), newer runtime $(disk_short "$latest")"
     fi
     class=your-call
-    if [ "$state" = Booted ]; then class=keep; note="running, $note"; fi
+    if [ "$state" = Booted ]; then class=keep; note="running, $note"
+    elif [ "$state" != Shutdown ]; then class=keep; note="$state, $note"
+    fi
     disk_row "sim:$udid" "$name, $(disk_short "$rt")" "$kb" "$class" "$note"
   done <<< "$DISK_DEVICES"
 
@@ -274,7 +281,10 @@ disk_scan_sims() {
     users="$(R="$rt" awk -F'\t' '$2 == ENVIRON["R"]' <<< "$DISK_DEVICES" | wc -l | tr -d ' ')"
     note="used by $users simulator(s)"
     class=your-call
-    if [ "$del" != true ]; then class=keep; note="$note, not deletable"; fi
+    if [ "$del" != true ]; then class=keep; note="$note, not deletable"
+    elif ! $devices_ok; then class=keep; note="simulator list unreadable"
+    elif [ "$rt" = - ]; then class=keep; note="runtime unknown"
+    fi
     disk_row "runtime:$uuid" "$(disk_short "$rt") runtime" "$kb" "$class" "$note"
   done <<< "$DISK_IMAGES"
 }
@@ -311,7 +321,7 @@ disk_scan_devicesupport() {
   disk_darwin && [ -d "$root" ] || return 0
   for d in "$root"/*/; do
     d="${d%/}"
-    [ -d "$d" ] || continue
+    [ -d "$d" ] && [ ! -L "$d" ] || continue
     m="$(wt_mtime "$d")"
     if [ "$m" -gt "$newest_m" ]; then newest_m="$m"; newest="$d"; fi
   done
@@ -324,6 +334,7 @@ disk_scan_devicesupport() {
       id="$(printf '%s' "$base" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g')"
     fi
     id="devicesupport:$id"
+    [ -z "$(disk_field "$id" 1)" ] || continue  # one id must never name two folders
     if [ "$d" = "$newest" ]; then
       disk_row "$id" "iOS DeviceSupport $base" "$(wt_size_kb "$d")" keep newest
     else

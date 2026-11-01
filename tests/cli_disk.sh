@@ -13,7 +13,7 @@ cd "$T"
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
 unset PUB_CACHE GRADLE_USER_HOME npm_config_cache HOMEBREW_CACHE ANDROID_HOME ANDROID_SDK_ROOT ANDROID_AVD_HOME \
-  SOLIDVIBES_PROJECTS_DIR UNAME GRADLE_RUNNING
+  SOLIDVIBES_PROJECTS_DIR UNAME GRADLE_RUNNING SIMCTL_BROKEN GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 export GIT_AUTHOR_NAME=test GIT_AUTHOR_EMAIL=test@example.com GIT_COMMITTER_NAME=test GIT_COMMITTER_EMAIL=test@example.com
 export HOME="$T/home" STUBS="$T/stubs" LOG="$T/log" FX="$ROOT/tests/fixtures/disk"
@@ -33,7 +33,7 @@ printf '#!/bin/sh\necho "${UNAME:-Darwin}"\n' > "$STUBS/uname"
 printf '#!/bin/sh\necho "$STUBS/simctl"\n' > "$STUBS/xcrun"
 chmod +x "$STUBS/uname" "$STUBS/xcrun"
 stub simctl 'case "$*" in
-  "list -j devices") cat "$FX/devices.json" ;;
+  "list -j devices") [ -z "${SIMCTL_BROKEN:-}" ] || exit 1; cat "$FX/devices.json" ;;
   "list -j runtimes") cat "$FX/runtimes.json" ;;
   "runtime list -j") cat "$FX/images.json" ;;
   "delete '"${U}"'06") echo "Unable to delete: NSCocoaErrorDomain 513" >&2; exit 1 ;;
@@ -86,8 +86,11 @@ mkprojects() {
   blob "$R/ios/build"
   git -C "$R" add .gitignore file
   git -C "$R" add -f ios/build/blob
+  blob "$R/:app/build"  # as a pathspec this would read as app/build
+  git -C "$R" add -f -- "./:app/build/blob"
   git -C "$R" commit -qm one
   blob "$R/build/out"
+  blob "$R/app/build"
   blob "$R/node_modules/plain"
   blob "$R/.dart_tool"  # not in .gitignore, so not build output
   git init -q "$R/vendor/nested"
@@ -110,7 +113,7 @@ printf '%s\n' "$tsv" | awk -F'\t' 'NR > 1 && !/^#/ && $3 !~ /^[0-9]+$/ { bad = 1
 printf '%s\n' "$tsv" | grep -q '^# free	[0-9]' || fail "tsv free line: $tsv"
 [ "$(col homebrew 3)" = 1464844 ] || fail "homebrew size from brew's estimate: $(row homebrew)"
 [ "$(col build:example-app 4)" = safe ] || fail "build row: $tsv"
-col build:example-app 2 | grep -q "(1 folder(s))" || fail "only build/ qualifies (ios/build is tracked, node_modules holds a .git, .dart_tool is not ignored, vendor/nested is its own repo): $(row build:example-app)"
+col build:example-app 2 | grep -q "(2 folder(s))" || fail "only build/ and app/build qualify (ios/build and :app/build are tracked, node_modules holds a .git, .dart_tool is not ignored, vendor/nested is its own repo): $(row build:example-app)"
 [ -z "$(row build:example-web)" ] || fail "a build folder touched now is not counted: $tsv"
 col deriveddata 5 | grep -q "skipped 1 active" || fail "deriveddata note: $(row deriveddata)"
 [ "$(col worktrees 4)" = safe ] || fail "worktrees row: $tsv"
@@ -155,6 +158,7 @@ tsv="$(cd "$R/ios" && sv --tsv --projects "$P")"
 out="$(sv --clean build:example-app deriveddata --projects "$P" 2>&1)" || fail "build clean: $out"
 [ ! -e "$R/build" ] || fail "build/ should be gone"
 [ -f "$R/ios/build/blob" ] || fail "a build folder with a tracked file must survive"
+[ ! -e "$R/app/build" ] && [ -f "$R/:app/build/blob" ] || fail "a tracked folder whose name is pathspec magic must survive"
 [ -d "$R/node_modules/plain" ] || fail "a folder holding a nested .git must survive"
 [ -f "$R/.dart_tool/blob" ] || fail "a folder git does not ignore must survive"
 [ -f "$R/vendor/nested/build/blob" ] || fail "build output of a nested repo must survive"
@@ -197,6 +201,13 @@ logged "simctl runtime delete ${U}b1" || fail "another image of the runtime stay
 if out="$(sv --clean "runtime:${U}b1" "runtime:${U}b2")"; then fail "both images with users left: $out"; fi
 ! logged "runtime delete" || fail "both images of a used runtime were deleted"
 
+# An unreadable simulator list keeps every runtime
+: > "$LOG"
+tsv="$(SIMCTL_BROKEN=1 sv --tsv)"
+[ "$(col "runtime:${U}b1" 4)" = keep ] || fail "runtimes are kept when the simulator list is unreadable: $(row "runtime:${U}b1")"
+if out="$(SIMCTL_BROKEN=1 sv --clean "runtime:${U}b1" 2>&1)"; then fail "a runtime is refused when the simulator list is unreadable: $out"; fi
+! logged "runtime delete" || fail "a runtime was deleted without a simulator list"
+
 # A failing tool is reported, the rest still runs, nothing falls back to rm
 : > "$LOG"
 if out="$(sv --clean "sim:${U}06" "sim:${U}01" sim-unavailable)"; then fail "a failed delete should exit 1: $out"; fi
@@ -235,6 +246,10 @@ guard="$(SOLIDVIBES_ROOT="$ROOT" "$BASH" -c '
   done
   disk_safe_path "$HOME/.android" || echo "refused a plain folder"
   HOME=/ disk_safe_path /tmp && echo "allowed with HOME=/"
+  HOME=/. disk_safe_path /usr && echo "allowed with HOME=/."
+  ln -s "$PWD/outside" "$HOME/link"
+  disk_safe_path "$HOME/link/" && echo "allowed a symlink with a trailing slash"
+  rm "$HOME/link"
   HOME= disk_safe_path "$PWD/home/.android" && echo "allowed with empty HOME"
   (cd "$HOME" && disk_safe_path .android) && echo "allowed a relative path"
   true')"
