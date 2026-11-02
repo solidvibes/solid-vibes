@@ -206,6 +206,46 @@ init_replace_block() { # <work> <name> <part>
   mv "$1.new" "$1"
 }
 
+# Older setups seeded `## Working style` unmarked. Word for word as seeded, it becomes the empty
+# working-style block, which the refresh then fills; edited, it stays the owner's and the block is
+# not added. Prints adopted, own or none.
+init_adopt_working_style() { # <work>
+  local legacy="$INIT_TMP/working-style.legacy"
+  cat > "$legacy" <<'EOF'
+## Working style
+
+- Lead with the answer or the change. Skip preamble.
+- Be concise. Short, factual, true.
+- Fix what was asked, nothing more. No unasked-for improvements.
+- Never invent ratings, reviews, testimonials or user counts.
+EOF
+  awk -v f="$legacy" '
+    BEGIN { while ((getline w < f) > 0) want = want w "\n"; close(f) }
+    { l[NR] = $0; line = $0; sub(/[ \t\r]+$/, "", line); t[NR] = line }
+    END {
+      for (i = 1; i <= NR; i++) {
+        if (t[i] ~ /^```/) fence = !fence
+        if (fence) continue
+        if (t[i] ~ /^<!-- solidvibes:begin [a-z0-9-]+ -->$/) inblock = 1
+        if (t[i] ~ /^<!-- solidvibes:end [a-z0-9-]+ -->$/) inblock = 0
+        if (!inblock && t[i] == "## Working style") { s = i; break }
+      }
+      if (!s) { print "none" > "/dev/stderr"; for (i = 1; i <= NR; i++) print l[i]; exit }
+      for (e = s + 1; e <= NR; e++) if (t[e] ~ /^## / || t[e] ~ /^<!-- solidvibes:begin /) break
+      last = e - 1
+      while (last > s && t[last] == "") last--
+      got = ""
+      for (i = s; i <= last; i++) got = got t[i] "\n"
+      if (got != want) { print "own" > "/dev/stderr"; for (i = 1; i <= NR; i++) print l[i]; exit }
+      print "adopted" > "/dev/stderr"
+      for (i = 1; i < s; i++) print l[i]
+      print "<!-- solidvibes:begin working-style -->"
+      print "<!-- solidvibes:end working-style -->"
+      for (i = last + 1; i <= NR; i++) print l[i]
+    }' "$1" > "$1.new" 2> "$INIT_TMP/working-style.result" && mv "$1.new" "$1"
+  cat "$INIT_TMP/working-style.result"
+}
+
 # Builds the new AGENTS.md in $INIT_TMP/agents.work. Fails, writing nothing, on broken markers.
 init_build_agents() {
   local tpl="$SOLIDVIBES_ROOT/setup/templates/AGENTS.md" work="$INIT_TMP/agents.work"
@@ -237,9 +277,15 @@ init_build_agents() {
     fi
   done < "$INIT_TMP/parts.idx"
 
+  if [ "$INIT_AGENTS_EXISTS" = true ] && [ "$(init_count "$work" "<!-- solidvibes:begin working-style -->")" = 0 ] &&
+    [ "$(init_adopt_working_style "$work")" = own ]; then
+    INIT_OWN_WORKING_STYLE=true
+  fi
+
   while IFS='	' read -r file kind key; do
     case "$kind" in
       block)
+        [ "$key" != working-style ] || [ "$INIT_OWN_WORKING_STYLE" = false ] || continue
         awk -v h="<!-- $INIT_TOKEN from $label. Made by solidvibes init; changes between these markers are replaced the next time it runs. -->" \
           'NR == 1 { print; print h; next } { print }' "$file" > "$file.h"
         init_record "AGENTS.md" "$key" "sv $INIT_SV_VERSION (setup/templates/AGENTS.md)" "$INIT_SV_VERSION" "$(init_hash "$file.h")"
@@ -438,7 +484,7 @@ cli_init() {
   [ -f "$INIT_DIR/.solidvibes/manifest.json" ] && \
     { grep -o '"path": "[^"]*"' "$INIT_DIR/.solidvibes/manifest.json" | sed 's/^"path": "//; s/"$//' > "$INIT_TMP/old-paths" || true; }
   INIT_N_written=0; INIT_N_unchanged=0; INIT_N_created=0; INIT_N_kept=0; INIT_N_linked=0; INIT_N_skipped=0
-  INIT_AGENTS_ADDED=""; INIT_FACTORY_IN_CLAUDE=false; INIT_AGENTS_SKIP=false
+  INIT_AGENTS_ADDED=""; INIT_FACTORY_IN_CLAUDE=false; INIT_AGENTS_SKIP=false; INIT_OWN_WORKING_STYLE=false
 
   if [ -L "$INIT_DIR/AGENTS.md" ] || { [ -e "$INIT_DIR/AGENTS.md" ] && [ ! -f "$INIT_DIR/AGENTS.md" ]; }; then
     INIT_AGENTS_SKIP=true
@@ -469,5 +515,8 @@ cli_init() {
   echo "solidvibes init: done. $INIT_N_written written, $INIT_N_unchanged unchanged, $INIT_N_created created, $INIT_N_kept kept, $INIT_N_linked linked, $INIT_N_skipped skipped."
   if [ "$INIT_FACTORY_IN_CLAUDE" = true ]; then
     echo "solidvibes init: CLAUDE.md holds a ## Factory, so AGENTS.md got none. The skills read the contract from AGENTS.md only: the interview skill's setup moves it there after the owner says yes."
+  fi
+  if [ "$INIT_OWN_WORKING_STYLE" = true ]; then
+    echo "solidvibes init: AGENTS.md has its own ## Working style, so it got no working-style block. Delete that section and run init again to get the one Solid Vibes keeps current."
   fi
 }

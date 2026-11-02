@@ -31,7 +31,7 @@ Read `.solidvibes/handover.md` if it exists: Done, Open, Next, and the `## Snaps
 ## 3. Bring the project to its latest state
 
 - **Latest commits.** When the current branch has an upstream and is behind it: with no uncommitted work, `git pull --ff-only` and say how many commits came in. Uncommitted work, or the branch has its own commits too: say so in one line and leave it. Never stash, merge or rebase here.
-- **Latest setup.** On `setup: differs`, say "Solid Vibes was updated since this project was set up; I'll bring its files up to date. Nothing you wrote changes." Then follow `../interview/setup.md` (next to the `interview` skill) as a refresh: profile and agents from `.solidvibes/manifest.json`, never the blank defaults. Report what it changed in one line.
+- **Latest setup.** On `setup: differs`, or a doctor line `no <name> block yet`, say "Solid Vibes was updated since this project was set up; I'll bring its files up to date. Nothing you wrote changes." Then follow `../interview/setup.md` (next to the `interview` skill) as a refresh: profile and agents from `.solidvibes/manifest.json`, never the blank defaults. Report what it changed in one line.
 - **Doctor problems**: say each in one plain line and offer the fix; fix only on a yes.
 
 Never update Solid Vibes itself here; Claude Code updates the plugin, and other agents rerun `solidvibes install`.

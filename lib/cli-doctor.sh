@@ -2,6 +2,7 @@
 #   Read-only health check of a project; never fixes. Checks:
 #   - the Factory contract in AGENTS.md parses and has every field
 #   - generated files and AGENTS.md blocks still match their hash in .solidvibes/manifest.json
+#   - every block in the installed AGENTS.md template is in the project's AGENTS.md
 #   - the contract's harness: none, command missing, or `status --json` answering
 #   - every .claude/skills link resolves
 #   - no `## Factory` left in CLAUDE.md
@@ -88,6 +89,15 @@ doctor_manifest() {
       [ "$actual" = "$hash" ] || doctor_problem "$path was edited by hand; solidvibes init replaces it, so move the change into a seeded file or the project's own skills"
     fi
   done < "$manifest"
+  for block in $(sed -n 's/^<!-- solidvibes:begin \([a-z0-9-]*\) -->$/\1/p' "$SOLIDVIBES_ROOT/setup/templates/AGENTS.md"); do
+    [ -f "$dir/AGENTS.md" ] && ! grep -qxF "<!-- solidvibes:begin $block -->" "$dir/AGENTS.md" || continue
+    grep -qF "\"block\": \"$block\"" "$manifest" && continue
+    if [ "$block" = working-style ] && grep -qx '## Working style[[:space:]]*' "$dir/AGENTS.md"; then
+      doctor_note "AGENTS.md: its own ## Working style stands in for the working-style block; delete it and run solidvibes init for the kept-current one"
+    else
+      doctor_problem "AGENTS.md: no $block block yet; solidvibes init adds it"
+    fi
+  done
   [ "$DOCTOR_PROBLEMS" != "$before" ] || doctor_ok "all $n generated entries match the manifest"
 }
 

@@ -33,6 +33,8 @@ solidvibes init --profile <profile folder> --agents <list> .
 
 Its output has one line per file: `created` (new, now the project's own), `wrote` and `updated` (Solid Vibes' own files, refreshed), `unchanged`, `kept` (already there, left alone), `linked`, `skipped` (something of the user's sits where Solid Vibes wanted to write; left alone). Tell the user in one or two sentences what was set up and what was left alone. For each `skipped` line, say what it means and ask what they want; never move their file without a yes.
 
+If it says `AGENTS.md has its own ## Working style`, tell the user in one line that their own answer-style rules stay and the kept-current ones were not added; offer to swap theirs for those, and on a yes delete that section and run it again.
+
 If it stops with an error about broken markers in `AGENTS.md`, show the user the broken spot and fix only those marker lines after their yes, then run it again.
 
 **Pro stack.** When the profile's `SKILL.md` frontmatter has `requires: sv-pro`, merge into the project's `.claude/settings.json` (create it if missing; keep every other key), showing the diff first and writing it on their yes. Say why in one line: "This turns on the stack know-how for this project only, and keeps it up to date."

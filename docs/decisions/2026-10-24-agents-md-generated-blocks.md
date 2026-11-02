@@ -9,7 +9,7 @@
 
 ## Decision
 
-Three parts are generated and refreshed by every `init`, between `<!-- solidvibes:begin <name> -->` and `<!-- solidvibes:end <name> -->`: `audience`, `routing` and `visuals`. Everything outside the markers (project, non-negotiables, working style, the Factory contract) is seeded once and never overwritten. `doctor` flags a generated block that was edited by hand.
+Three parts are generated and refreshed by every `init`, between `<!-- solidvibes:begin <name> -->` and `<!-- solidvibes:end <name> -->`: `audience`, `routing` and `visuals` (and `working-style` since 2026-11-02, see `2026-11-02-working-style-block.md`). Everything outside the markers (project, non-negotiables, code principles, the Factory contract) is seeded once and never overwritten. `doctor` flags a generated block that was edited by hand.
 
 ## Why
 
