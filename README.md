@@ -2,7 +2,7 @@
 
 Solid Vibes is a free plugin for Claude Code that makes the AI build the way a careful team would. It is for anyone who builds with AI, whether you have never written code or do it every day.
 
-It also works in Codex and other AI coding agents. Website: [solidvibes.stojanovventures.com](https://solidvibes.stojanovventures.com).
+It also works in Codex and other AI coding agents. Website: [solidvibes.dev](https://solidvibes.dev).
 
 ## The method
 
