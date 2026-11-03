@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # solidvibes doctor: a clean project passes; hand edits to generated files and blocks, a broken
-# .claude/skills link, a ## Factory in CLAUDE.md and a missing harness are reported; doctor changes nothing.
+# .claude/skills link, a ## Factory in CLAUDE.md and a missing harness are reported; an own ## Working
+# style is a note; doctor changes nothing.
 set -euo pipefail
 
 SV="$(cd "$(dirname "$0")/.." && pwd -P)/bin/solidvibes"
@@ -54,6 +55,15 @@ expect_line "sv-harness status --json answers"
 rm "$T/bin/sv-harness"
 out="$(PATH="$T/bin:/usr/bin:/bin" "$SV" doctor "$Q")" && fail "a missing harness should fail"
 expect_line 'problem  sv-harness not installed: run `solidvibes install`'
+
+# An owner's own ## Working style in place of the block is a note, not a problem.
+W="$T/own-style"
+"$SV" init "$W" > /dev/null
+awk '$0 == "<!-- solidvibes:begin working-style -->" { print "## Working style\n\n- Our own way."; skip = 1 } !skip { print } $0 == "<!-- solidvibes:end working-style -->" { skip = 0 }' \
+  "$W/AGENTS.md" > "$T/a" && cp "$T/a" "$W/AGENTS.md"
+grep -v '"block": "working-style"' "$W/.solidvibes/manifest.json" > "$T/m" && cp "$T/m" "$W/.solidvibes/manifest.json"
+out="$("$SV" doctor "$W")" || fail "an own ## Working style should pass: $out"
+expect_line "note     AGENTS.md: its own ## Working style stands in for the working-style block"
 
 # No contract, no manifest.
 mkdir "$T/bare"

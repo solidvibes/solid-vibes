@@ -83,12 +83,18 @@ How depends on the agent: `.solidvibes/agents.md` says what each agent in use sh
 Every page is made with the `visual` skill: it holds the method and the look. A short `## Look` section elsewhere in this file or in `CLAUDE.md` (one line, such as "accent #0055AA, headings in Georgia") sets this project's look.
 <!-- solidvibes:end visuals -->
 
+<!-- solidvibes:begin working-style -->
 ## Working style
 
 - Lead with the answer or the change. Skip preamble.
 - Be concise. Short, factual, true.
+- Show only what the person needs. Think at length in private, not in the reply. More detail or an explanation only when they ask.
+- Lists and tables instead of paragraphs where they fit.
+- A decision, a flow or a screen gets a visual (see Visuals).
+- No filler: no recaps of the question, no closing offers.
 - Fix what was asked, nothing more. No unasked-for improvements.
 - Never invent ratings, reviews, testimonials or user counts.
+<!-- solidvibes:end working-style -->
 
 ## Code principles
 

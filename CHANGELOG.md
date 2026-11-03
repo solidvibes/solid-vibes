@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- Every project tells the AI to answer short, show only what you need, and use lists, tables and pictures; older projects get it on their next hello.
 - Saying "cleanup" or "my disk is full" lists what takes space on your computer with its size and what it costs, and deletes only what you pick.
 - The page skill is now called `visual` (`/sv:visual`); with Codex, run `solidvibes install` again and remove the old link it names.
 - A new `eli-solid` skill makes every page Solid Vibes shows the same way, picture first with real names and open questions flagged, in the app's own colours and fonts.

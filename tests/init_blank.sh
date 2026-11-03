@@ -56,7 +56,7 @@ for f in AGENTS.md CHANGELOG.md .solidvibes/factory-contract.md .solidvibes/agen
 done
 [ ! -e "$E/CLAUDE.md" ] || fail "init must not write a CLAUDE.md"
 has "$E/AGENTS.md" "# empty"
-for b in audience routing visuals; do
+for b in audience routing visuals working-style; do
   [ "$(count "$E/AGENTS.md" "<!-- solidvibes:begin $b -->")" = 1 ] || fail "block $b missing"
 done
 has "$E/docs/README.md" "## Right now"
@@ -76,7 +76,7 @@ for field in layers checks codegen run plans docs rules risk ships sandbox; do
   contract_field "$E" "$field" >/dev/null || fail "empty repo: contract has no $field"
 done
 grep -q '{{' "$E/AGENTS.md" "$E/docs/README.md" "$E/docs/stack.md" && fail "a placeholder was left unfilled"
-jq -e '.profile.name == "blank" and (.agents | length) == 3 and ([.generated[] | select(.block)] | length) == 3' \
+jq -e '.profile.name == "blank" and (.agents | length) == 3 and ([.generated[] | select(.block)] | length) == 4' \
   "$E/.solidvibes/manifest.json" >/dev/null || fail "manifest shape"
 checks_green "$E"
 again_unchanged "$E"
@@ -89,7 +89,9 @@ init "$A"
 [ "$(count "$A/AGENTS.md" "## Factory")" = 1 ] || fail "one ## Factory expected"
 has "$A/AGENTS.md" "A fixture for \`tests/init_blank.sh\`"
 has "$A/AGENTS.md" "<!-- solidvibes:begin routing -->"
-has "$A/AGENTS.md" "## Working style"
+[ "$(count "$A/AGENTS.md" "## Working style")" = 1 ] || fail "one ## Working style expected"
+awk '$0 == "<!-- solidvibes:begin working-style -->" { w = NR } $0 == "## Factory" { f = NR } END { exit !(w && w < f) }' "$A/AGENTS.md" ||
+  fail "the working-style block goes before ## Factory"
 [ "$(tail -n 1 "$A/AGENTS.md")" = '- **harness** — none' ] || fail "## Factory should stay last"
 [ ! -e "$A/CLAUDE.md" ] || fail "init must not write a CLAUDE.md"
 checks_green "$A"
@@ -233,5 +235,28 @@ grep -q "skipped *AGENTS.md" "$T/out" || fail "a linked AGENTS.md should be skip
 mkdir -p "$T/folder-agents/AGENTS.md"
 init "$T/folder-agents"
 [ -z "$(ls -A "$T/folder-agents/AGENTS.md")" ] || fail "init wrote into a folder named AGENTS.md"
+
+# 9. An older setup's unmarked ## Working style: as seeded, it becomes the block; edited, it stays and
+#    gets no block. Either way one heading, and a second run changes nothing.
+W="$T/legacy-style"
+cp -R "$FIXTURE" "$W"
+awk '/^## Factory$/ { print "## Working style\n\n- Lead with the answer or the change. Skip preamble.\n- Be concise. Short, factual, true.\n- Fix what was asked, nothing more. No unasked-for improvements.\n- Never invent ratings, reviews, testimonials or user counts.\n" } { print }' \
+  "$FIXTURE/AGENTS.md" > "$W/AGENTS.md"
+init "$W"
+[ "$(count "$W/AGENTS.md" "## Working style")" = 1 ] || fail "legacy: one ## Working style expected"
+[ "$(count "$W/AGENTS.md" "<!-- solidvibes:begin working-style -->")" = 1 ] || fail "legacy: seeded section should become the block"
+has "$W/AGENTS.md" "Lists and tables instead of paragraphs where they fit."
+again_unchanged "$W"
+
+V="$T/own-style"
+cp -R "$FIXTURE" "$V"
+awk '/^## Factory$/ { print "## Working style\n\n- Our own way.\n" } { print }' "$FIXTURE/AGENTS.md" > "$V/AGENTS.md"
+init "$V"
+grep -q "AGENTS.md has its own ## Working style" "$T/out" || fail "own style: init should say why there is no block"
+[ "$(count "$V/AGENTS.md" "## Working style")" = 1 ] || fail "own style: one ## Working style expected"
+has "$V/AGENTS.md" "- Our own way."
+lacks "$V/AGENTS.md" "<!-- solidvibes:begin working-style -->"
+has "$V/AGENTS.md" "<!-- solidvibes:begin visuals -->"
+again_unchanged "$V"
 
 echo "init_blank: ok"
