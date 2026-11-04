@@ -10,7 +10,7 @@
     },
     {
       "name": "sv-pro",
-      "source": { "source": "github", "repo": "solidvibes/solid-vibes-pro" },
+      "source": { "source": "url", "url": "https://github.com/solidvibes/solid-vibes-pro.git" },
       "description": "The Flutter and Supabase extension: stack decisions and rules for the app, data, backend, tests, security, CI and release."
     }
   ]

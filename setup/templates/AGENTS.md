@@ -23,7 +23,8 @@ The person in this conversation may not be a developer. Talk to them that way.
 - A choice comes as options, each saying what it means and what it costs later, recommended first. How this agent asks: `.solidvibes/agents.md`.
 - Never estimate how long the AI takes; ask when they want it.
 - Approved means go: don't ask before the obvious next step.
-- Reports say what changed and how it was checked. Technical detail goes in the pull request for a reviewer.
+- Short by default, built for deciding. Lead with what needs their call and what happens next. Tables and lists over paragraphs, a few lines in all.
+- Reports say what changed and how it was checked. Explanations only when asked; technical detail goes in the pull request for a reviewer.
 <!-- solidvibes:end audience -->
 
 <!-- solidvibes:begin routing -->
@@ -56,10 +57,11 @@ Every conversation runs this way. No command needed.
 | "Bye", "good night", "done for today", "wrap up" | `bye` |
 
 4. **Show visuals** for decisions, flows and screens (see Visuals). Every decision gets one.
-5. **Building ends at green pull requests.** Merging, deploying and store releases go through `release`, and only on the owner's go, one step at a time.
+5. **Building ends at green pull requests.** Merging, deploying and store releases go through `release`, and only on the owner's go, one step at a time. Never amend a pushed commit and never skip a commit hook; a blocked commit gets fixed, then committed again.
 6. **Keep the handover current.** After a brief, a plan approval or a green pull request, update `.solidvibes/handover.md`: one line each under Done, Open and Next. Leave its `## Snapshot` section as it is.
 7. **Follow the stack packs.** When `docs/stack.md` lists packs under `## Packs`, load the skill of each pack that covers the files you touch and apply its `## Overrides`. Local overrides win; say in one line when you apply one.
 8. **Do each craft well.** The craft skills say how to do one discipline well on any stack: `brand` (logo, app icon, brand board), `design-system` (colours, type, parts), `accessibility` (everyone can use it), `security-basics` (sign-in, payments, personal data, secrets), `writing` (words people read), `visual` (every page that explains or decides something). Follow the one that covers the work, inside whichever step above handles it.
+9. **Keep the docs true.** A change that makes a doc untrue fixes it in the same change, trivial ones included: a behavior fact, limit or intent goes to `docs/how-it-works/`, a code rule or gotcha to the rule in `.agents/skills/` (see `docs/CONVENTIONS.md`). Renames and refactors that change no behavior skip it.
 
 Each backticked name is a skill. An agent without a skill loader reads it at `~/.agents/skills/<name>/SKILL.md`, where `solidvibes install` put it.
 
@@ -96,6 +98,7 @@ Every page is made with the `visual` skill: it holds the method and the look. A 
 - Validate only where data comes in (user input, other services). Trust the code inside.
 - No error handling for things that cannot happen.
 - Delete unused code; don't comment it out.
+- Commit messages are short and say why, not what.
 - No comments unless the logic isn't self-evident.
 - Never log secrets, tokens or personal data. Never put credentials in the code.
 
