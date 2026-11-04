@@ -101,6 +101,8 @@ Patterns that came up which aren't captured in any `rules` file or in `AGENTS.md
 
 Behavior docs: when the plan adds or changes behavior, add or update the matching `docs/how-it-works/<surface>.md` with status `Planned` (the `go` skill moves it to `Built` in the same change that lands the code).
 
+Linear: when `## Packs` in `docs/stack.md` lists `linear`, follow the `linear` pack's `## At plan`.
+
 ## Phase 5 — Review (always)
 
 Spawn **one fresh** sub-agent (it never saw you write the plan; strongest model where the agent supports pinning) to review the plan with the `review` skill's table-only mode, against the applicable `rules`, `AGENTS.md` and the code, for latent bugs, wrong reasoning, missed conventions and over-engineering. Pass it the plan paths and the rule file paths, not your conclusions. It returns findings only; the planner fixes the plan for every finding it agrees with, without asking. Never review your own plan in your own context.

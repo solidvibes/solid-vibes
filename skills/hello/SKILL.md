@@ -44,6 +44,8 @@ When the worktrees table has rows marked `remove`, say "I'll clear N finished si
 
 Run what `## Checks at hello` in `docs/stack.md` lists, and say each result in one line. A failing check: say what it means and offer to fix it. Missing section, or still the italic placeholder: skip it; `update` drafts it.
 
+When `## Packs` in `docs/stack.md` lists `linear`, also run the `linear` pack's `## At hello`; its lines go in the brief.
+
 ## 6. Brief
 
 One short message, a few lines:

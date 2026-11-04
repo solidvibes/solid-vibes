@@ -55,6 +55,8 @@ Staging comes before production, when the project has both. Credentials come fro
 
 With a go: tag the released commit (`v<version>`) and push the tag. With a second go: publish a release page from the `## Unreleased` lines (`gh release create`). Then reset for the next cycle as the project does it: move the changelog lines under the released version, start a new `## Unreleased`, bump the version if the project keeps one in a file. One commit, with a go before it is pushed.
 
+When `## Packs` in `docs/stack.md` lists `linear`, run the `linear` pack's `## At release` after the tag: it closes the Linear issues that shipped.
+
 ## 7. Report
 
-Plain words: what is live, where, which version, the link to the release, what was skipped and why, and what the user still has to do themselves (a store review, a manual check). Keep it under ten lines.
+Plain words: what is live, where, which version, the link to the release, the Linear issues closed, what was skipped and why, and what the user still has to do themselves (a store review, a manual check). Keep it under ten lines.

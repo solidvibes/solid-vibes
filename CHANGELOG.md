@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- When a project lists the sv-pro `linear` pack, hello shows its open Linear issues, bye updates the ones the session touched, a plan can link to a Linear project, and release closes what shipped.
 - Installing sv-pro fetches it over HTTPS, so it works without an SSH key set up for GitHub.
 - Answers to the owner are short and built for deciding: what needs their call and what happens next, in tables and lists, with explanations on request.
 - Every change, even a one-line fix, keeps the docs true in the same change.
