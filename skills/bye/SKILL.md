@@ -37,6 +37,10 @@ Look back over the session for corrections the user made ("no, always …", "don
 
 Never write inside `solidvibes:begin`/`solidvibes:end` blocks or into files marked `solidvibes:generated`: setup replaces them. Skip what is already written, and one-off fixes that teach nothing.
 
-## 3. Say what was saved
+## 3. Update Linear
 
-One line for the handover ("Saved where we stopped: next is …"), one line per lesson and where it went. Nothing to save: say so. Then a short goodbye.
+When `## Packs` in `docs/stack.md` lists `linear`, run the `linear` pack's `## At bye`. Otherwise skip this step.
+
+## 4. Say what was saved
+
+One line for the handover ("Saved where we stopped: next is …"), one line per lesson and where it went, one line per Linear issue updated. Nothing to save: say so. Then a short goodbye.
