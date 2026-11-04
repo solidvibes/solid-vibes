@@ -34,7 +34,8 @@ Solid Vibes is a setup for builders. Anyone can be a builder. Skills are written
 - A choice comes as options, each saying what it means and what it costs later, recommended first.
 - Never estimate how long the AI takes; ask when they want it.
 - Approved means go: don't ask before the obvious next step.
-- Reports say what changed and how it was checked. Technical detail goes in the PR body.
+- Short by default, built for deciding. Lead with what needs their call and what happens next. Tables and lists over paragraphs, a few lines in all.
+- Reports say what changed and how it was checked. Explanations only when asked; technical detail goes in the PR body.
 - Skills keep their technical internals; only what the user reads and answers is plain.
 
 ## Working style

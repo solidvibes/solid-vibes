@@ -5,6 +5,10 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- Installing sv-pro fetches it over HTTPS, so it works without an SSH key set up for GitHub.
+- Answers to the owner are short and built for deciding: what needs their call and what happens next, in tables and lists, with explanations on request.
+- Every change, even a one-line fix, keeps the docs true in the same change.
+- The AI never amends a pushed commit or skips a commit hook.
 - Saying "cleanup" or "my disk is full" lists what takes space on your computer with its size and what it costs, and deletes only what you pick.
 - The page skill is now called `visual` (`/sv:visual`); with Codex, run `solidvibes install` again and remove the old link it names.
 - A new `eli-solid` skill makes every page Solid Vibes shows the same way, picture first with real names and open questions flagged, in the app's own colours and fonts.
