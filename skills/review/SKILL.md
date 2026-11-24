@@ -71,7 +71,7 @@ For each changed file, load the contract's `rules` that apply, and `AGENTS.md`. 
 
 ## Step 6 — Over-engineering check
 
-Surface anti-patterns that violate "simplest approach that works":
+Complexity is essential (the problem's own) or accidental (what the code adds). Essential complexity sits in one place; accidental complexity is cut. Surface anti-patterns that violate "simplest approach that works":
 - New abstraction layers without at least two concrete callers.
 - Speculative configurability (options or flags for needs that aren't real yet).
 - Defensive code for impossible inputs (validation for internal-only callers, null checks on non-nullable values).
@@ -79,6 +79,7 @@ Surface anti-patterns that violate "simplest approach that works":
 - Backwards-compat shims, or "removed" comments instead of deletion.
 - Speculative interfaces or base classes with one implementation.
 - Premature DRY: an abstraction that exists only to deduplicate three or fewer similar lines.
+- The opposite: a part (a button, a clickable card, a block of logic) repeated three or more times instead of extracted once.
 
 Each is a SUGGEST at minimum, a BLOCKER if egregious or pattern-violating per `AGENTS.md`.
 

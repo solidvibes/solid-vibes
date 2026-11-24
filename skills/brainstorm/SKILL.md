@@ -52,6 +52,8 @@ Explore only the open hard-to-undo decisions. Present two or three meaningfully 
 
 Then land on something: a recommendation per open decision, with clear reasoning. Be direct.
 
+While designing or prototyping, update the page or the code only: no commit per round and no push to an open pull request. Commit once the user says the design is done; the session history keeps the steps.
+
 When the goal itself is fuzzy, align on it with a visual first: a few boxes on top, mockups of every screen and state, assumptions called out (the shape of the `plan` skill's final phase).
 
 ## Phase 5 — Scope card

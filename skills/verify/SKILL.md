@@ -40,12 +40,14 @@ Slow suites (`checks.full`, simulator, emulator or desktop-app tests) run once p
 3. **Run the real thing** — launch the app per the contract's `run` (or a `run` skill if one is installed) and drive the changed flow. Capture a screenshot or the output as evidence (harness: `story` on a target, with a screenshot).
 4. **Staging** — only when `run` or the plan names a staging check for this flow, and only when credentials are available in this session.
 
+Done means seen where the user will look: every page or screen the change shows on, each point of the request ticked off, every interactive part clicked or played, a published page opened at its link, an upload seen in the store console. Passing code or tests is not that. Screenshots are the default evidence; skip them only when the user says to just get it done and they will test. Reuse one simulator, never create a new one, and shut it down when done.
+
 Never touch production. Anything that cannot run here (no credentials, a sandboxed headless run, a manual GUI step, harness exit 3) is not skipped silently: it goes in the report as an owner follow-up, with the exact command or steps, in plain words for the user.
 
 Headless runs (for example from `solidvibes run`) have no cloud credentials and no GUI: what needs them is an owner follow-up, not a failure. Fix failures you can and commit once as `fix: verification` with the contract's commit discipline (`codegen` if a matching file changed, then `checks.fast`, hooks never skipped).
 
 ## Report
 
-One table: check → pass / fail / owner follow-up → evidence (a short output line, a screenshot path, or a test count). Then one line: verified, or what is still unproven.
+One table: check → pass / fail / owner follow-up → evidence (a short output line, a screenshot path, or a test count). Then one line: verified, or what is still unproven, and whether the change is local, in a pull request or live.
 
 Write it where the handoff goes: the PR body when there is one, else inline. When a visual helps (a screenshot per changed screen, or the table as a page), show one as `.solidvibes/agents.md` says for the agent in use, else a local HTML file.

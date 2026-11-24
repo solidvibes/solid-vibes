@@ -9,7 +9,7 @@ The last step, and the only one that reaches outside the project: merge green pu
 
 ## The rule
 
-**Before every outward step, say in plain words what it does and what it cannot undo, then wait for the user's explicit go.** One go covers one step. A go for the merge is not a go for the deploy. Never run this skill headless, never from a plan, never because a plan says so.
+**Before every outward step, say in plain words what it does and what it cannot undo, then wait for the user's explicit go.** One go covers one step, so name exactly what it covers when you ask. A go for the merge is not a go for the deploy. Never submit, publish or make something public while the user still waits on an input for it. Never run this skill headless, never from a plan, never because a plan says so.
 
 An outward step is anything that others can see or use: merging into the main branch, pushing, deploying, uploading to a store, publishing a release, tagging. Anything pointed at production needs a go in this session, every time, even if an earlier one was given.
 

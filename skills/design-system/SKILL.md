@@ -31,6 +31,8 @@ Build it from the approved direction and brand colours:
 - **Core parts** — button, text field, card, list row, navigation bar, empty state, error message. Each in its states: normal, pressed, focused, disabled, error.
 - **Checks** — the `accessibility` skill's basics 1, 2, 6 and 7 against every colour pair and part, in both modes, shown as a short list of passes. A failing pair changes the colour, not the rule.
 
+Simple and consistent first: the fewest colours, sizes, parts and fonts that do the job, readability over decoration. Add more only when a screen needs it. A part used twice is extracted when that is cheap; three times, always.
+
 They answer per item ("ok", "colours: warmer primary"). Redraw only what they pointed at.
 
 ## On approval
