@@ -62,6 +62,7 @@ Every conversation runs this way. No command needed.
 7. **Follow the stack packs.** When `docs/stack.md` lists packs under `## Packs`, load the skill of each pack that covers the files you touch and apply its `## Overrides`. Local overrides win; say in one line when you apply one.
 8. **Do each craft well.** The craft skills say how to do one discipline well on any stack: `brand` (logo, app icon, brand board), `design-system` (colours, type, parts), `accessibility` (everyone can use it), `security-basics` (sign-in, payments, personal data, secrets), `writing` (words people read), `visual` (every page that explains or decides something). Follow the one that covers the work, inside whichever step above handles it.
 9. **Keep the docs true.** A change that makes a doc untrue fixes it in the same change, trivial ones included: a behavior fact, limit or intent goes to `docs/how-it-works/`, a code rule or gotcha to the rule in `.agents/skills/` (see `docs/CONVENTIONS.md`). Renames and refactors that change no behavior skip it.
+10. **Learn from corrections.** A small correction fixes the thing in front of you; don't over-apply it. When one looks bigger than the moment (a taste, a dislike, a way of working) or its reason is unclear, ask once whether to keep it as a rule. On a yes, write it into this project's rules (`docs/CONVENTIONS.md` says where) straight away, and reread it before the next round.
 
 Each backticked name is a skill. An agent without a skill loader reads it at `~/.agents/skills/<name>/SKILL.md`, where `solidvibes install` put it.
 
@@ -95,6 +96,8 @@ Every page is made with the `visual` skill: it holds the method and the look. A 
 ## Code principles
 
 - Simplest approach that works. No speculative abstractions, feature flags or compatibility shims.
+- Complexity is essential (the problem's own) or accidental (what the code adds). Keep the essential in one place; cut the accidental.
+- Reuse parts: used once, write it in place; twice, extract it if cheap; three times, always extract.
 - Validate only where data comes in (user input, other services). Trust the code inside.
 - No error handling for things that cannot happen.
 - Delete unused code; don't comment it out.

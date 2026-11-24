@@ -40,6 +40,8 @@ Never update Solid Vibes itself here; Claude Code updates the plugin, and other 
 
 When the worktrees table has rows marked `remove`, say "I'll clear N finished side copies of the project; nothing unfinished is touched." Then run `solidvibes worktrees --clean <repo root>`, always with the repo root, never a folder of projects. Report what was freed in one line.
 
+Also shut down simulators left running, and name plans from earlier sessions that were never committed: commit or remove each on a yes.
+
 ## 5. Stack checks
 
 Run what `## Checks at hello` in `docs/stack.md` lists, and say each result in one line. A failing check: say what it means and offer to fix it. Missing section, or still the italic placeholder: skip it; `update` drafts it.

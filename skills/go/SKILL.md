@@ -27,6 +27,10 @@ Modes (one loop, different entries):
 
 A sub-agent costs about 50k tokens just to start. Handle these directly, without spawning one: PR and CI status checks, worktree cleanup, and one-line docs updates. Code, copy and builds go to a sub-agent. A one-off step with no code (a docs-only change) gets no agent of its own: fold it into the next lane's prompt.
 
+Before handing the user a step, try it yourself: run the command, use the browser tool for a dashboard, use the keys already set up. When a tool keeps asking for the user's login, suspect your own shell (sandbox, locale) first. Hand over only what needs their own hands, and say what you tried. Ask only for real decisions.
+
+Pick a sub-agent when the result comes back to this conversation, a separate session when the work stands on its own. A separate session runs on its own: don't watch it, relay its notes or message it, and it never messages the session that started it.
+
 ## Models
 
 Pin the model on every sub-agent where the agent supports it, and pass this table to lanes for theirs. In Claude Code the names are `opus` and `sonnet`; elsewhere read "strongest" and "cheaper".

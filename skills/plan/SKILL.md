@@ -44,6 +44,8 @@ Decide the approach before writing. The usual axes:
 - Scope: what is explicitly out of scope?
 - Risk: does it touch a contract `risk` area?
 - Success: how will we know this is done correctly?
+- Stage: rough prototype, prototype, or built to last, from `docs/stack.md`. A prototype has one user, no staging and production split and light checks; built to last gets the full setup.
+- Lean: the leanest path that does the job; it can grow later. No extra services, admin screens, limits on who it is for, sales angles or paid assets beyond the minimum. Anything extra is a question with its cost, not part of the plan.
 
 For each, state your answer from project conventions, `docs/decisions/` and the stack profile. Ask the user only about a decision that is hard to undo and genuinely ambiguous, in outcome words. Don't ask questions the project already answers.
 

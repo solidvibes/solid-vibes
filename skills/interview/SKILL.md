@@ -47,6 +47,8 @@ Each round: two or three related questions at once, follow up until it is clear,
 
 Never estimate how long the AI takes to build it; ask when they want it, and write that down.
 
+In round 3, also settle the stage, as options: a rough prototype (just them, no setup), a prototype (a few people, light checks), or built to last (real users, staging and production). Write it into `docs/stack.md`; plans and reviews follow it, and it can move up later.
+
 **Round 5, the stack.** Look for available `stack-*` profiles (in the skill list, `.agents/skills/`, `~/.agents/skills/`) and read each one's description and `stack.md`. Recommend the one that fits the answers above, and confirm it in one plain line, in outcome words, using the round-3 devices: "It's one app for phones and computers, and keeps working without internet. OK?" Never ask which framework or which devices again. On a yes, rewrite the profile's App row in `docs/stack.md` to the devices from round 3, with one plain sentence of why; setup sets the contract's `ships` and harness `targets` from the same answer. If none fits or none is installed, stay with the blank profile and write each choice into `docs/stack.md` as the answers settle it (devices, where data lives, sign-in, payments), each with one plain sentence of why.
 
 **Interview decisions.** If the chosen profile's `stack.md` has `## Interview decisions`, ask them together in round 5, in order:

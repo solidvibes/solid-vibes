@@ -26,6 +26,8 @@ Walk the contract's `layers` end to end for the change. Don't skim a layer.
 
 Load the contract's always-on `rules` and the topic rules that apply to the code the change will touch. `AGENTS.md` covers crosscutting invariants. Load the skills for the packs in `docs/stack.md` `## Packs` that cover those files and apply `## Overrides` from `docs/stack.md`; a sub-agent you spawn gets the same instruction, since it gets no prompt hook. Check the contract's `plans` for recent related plans.
 
+Changing a look, a part or a repeated text: find every place it appears and list them in the brief. A redesign covers every related page; anything left out is named.
+
 When the change touches what people see or read, follow the `accessibility` and `writing` skills; when it touches sign-in, payments, personal data or secrets, the `security-basics` skill, whose Step 1 goes in the brief's **Risk**.
 
 ## Phase 2 — Brief
