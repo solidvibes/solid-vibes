@@ -40,6 +40,7 @@ Solid Vibes is a setup for builders. Anyone can be a builder. Skills are written
 
 ## Working style
 
+- A change to anything people install bumps `version` in `.claude-plugin/plugin.json` in the same change, or installs never pick it up. CI's first step, `scripts/version-check.sh`, fails without it.
 - Simplest approach that works. No speculative abstractions, feature flags or compat shims.
 - No comments unless the logic isn't self-evident.
 - Skill descriptions are trigger conditions ("Use when …") in the user's own phrases.
