@@ -21,6 +21,7 @@ const snapshot = atom({ plugin: 'sv', key: 'snapshot' } as const, EMPTY, { shape
 const turn = atom({ plugin: 'sv', key: 'turn' } as const, IDLE, { shape: 'turn-1' })
 const folds = atom({ plugin: 'sv', key: 'folds' } as const, {}, { shape: 'folds-1' })
 const reading = atom({ plugin: 'sv', key: 'reading' } as const, null, { shape: 'reading-1' })
+const opened = atom({ plugin: 'sv', key: 'opened' } as const, null, { shape: 'opened-1' })
 
 async function rootOf($: Engine): Promise<string> {
   return (await $.session.root().catch(() => undefined)) ?? (await $.session.cwd())
@@ -273,6 +274,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
   const now = await read($, turn)
   const folded = await read($, folds)
   const open = await read($, reading)
+  const openPlan = await read($, opened)
 
   if (!snap.isGated) return <Text dimColor>This is not a Solid Vibes project.</Text>
 
@@ -328,18 +330,26 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
   )
 
   const isOpen = (id: string) => isOpenIn(folded, id)
+  const openFile = async (path: string) => {
+    const root = await rootOf($)
+    const text = (await readText($, `${root}/${path}`)) ?? 'This file could not be read.'
+    const cut = text.length > READER_CAP ? `${text.slice(0, READER_CAP)}\n\nCut here; the full file is in the project.` : text
+    await update($, reading, () => ({ path, text: cut }))
+  }
   const toggle = (id: string, onOpen?: () => Promise<void>) => async () => {
     const after = await update($, folds, before => ({ ...before, [id]: !isOpenIn(before, id) }))
     if (after[id] === true && onOpen !== undefined) await onOpen()
   }
-  const fold = (id: string, title: string, count?: string, isSection = true, onOpen?: () => Promise<void>) => (
+  const fold = (id: string, title: string, count?: string, onOpen?: () => Promise<void>) => (
     <Box flexDirection="row" justifyContent="space-between" gap={1}>
       <Box flexDirection="row" gap={1} flexShrink={1}>
-        {isSection && SECTION_ICON[id] !== undefined && icon(SECTION_ICON[id])}
-        <Text {...(isSection ? heading : {})}>{title}</Text>
+        {SECTION_ICON[id] !== undefined && icon(SECTION_ICON[id])}
+        <Text {...heading}>{title}</Text>
+      </Box>
+      <Box flexDirection="row" gap={1} flexShrink={0}>
+        {count !== undefined && <Text dimColor>{count}</Text>}
         <Button key={`fold:${id}`} plain dimColor label={isOpen(id) ? '⌄' : '›'} onPress={toggle(id, onOpen)} />
       </Box>
-      {count !== undefined && <Text dimColor>{count}</Text>}
     </Box>
   )
   const mark = (state: 'done' | 'here' | 'todo') =>
@@ -457,6 +467,29 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       ? `Still working: ${working === 1 ? '1 helper' : `${working} helpers`} running`
       : 'Your turn'
   const isBusy = now.isRunning || working > 0
+  const focus = plans.find(plan => stageOf(plan) === 'Plan') ?? plans.find(plan => stageOf(plan) === 'Build') ?? plans[0]
+  const shown = openPlan === null ? undefined : plans.find(plan => plan.path === openPlan)
+  if (shown !== undefined) {
+    return (
+      <Box flexDirection="column" gap={1}>
+        <Button key="close-plan" plain dimColor onPress={() => update($, opened, () => null)}>
+          ‹ Back
+        </Button>
+        <Text {...heading}>{shown.title}</Text>
+        <Box flexDirection="column">
+          {planBar(shown)}
+          <Text dimColor size="footnote">
+            {stageLine(shown)}
+          </Text>
+        </Box>
+        {divider()}
+        <Box flexDirection="column">{stepper(shown)}</Box>
+        <Button key={`read:${shown.path}`} onPress={() => openFile(shown.path)}>
+          Read the plan
+        </Button>
+      </Box>
+    )
+  }
   const others = snap.helpers.filter(helper => helper.plan === undefined)
   const percent = snap.context?.percent
   const firstApproved = plans.find(plan => plan.status === 'Approved')
@@ -477,23 +510,38 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
 
   return (
     <Box flexDirection="column" gap={1}>
-      <Box flexDirection="column">
-        {fold('now', 'Now')}
-        {isOpen('now') && (
+      <Box flexDirection="column" borderStyle="round" borderColor={isBusy ? TONE.running : TONE.yourTurn} paddingX={1}>
+        <Text bold color={isBusy ? TONE.running : TONE.yourTurn}>
+          ● {headline}
+        </Text>
+        {focus === undefined ? (
+          <Text>Working without a plan</Text>
+        ) : (
           <Box flexDirection="column">
-            <Text bold color={isBusy ? TONE.running : TONE.yourTurn}>
-              ● {headline}
+            {!isBusy && stageOf(focus) === 'Plan' && <Text>Approve the plan</Text>}
+            <Text wrap="truncate-end" {...(!isBusy && stageOf(focus) === 'Plan' ? { dimColor: true } : {})}>
+              {focus.title}
             </Text>
-            {!isBusy && now.lastAsk !== '' && <Text dimColor>{now.lastAsk}</Text>}
-            {plans.length > 1 && row(`${plans.length} open`, `${needYou} ${needYou === 1 ? 'needs' : 'need'} you`)}
-            {plans.map(plan => (
-              <Box flexDirection="column">
-                {row(plan.title, stageLine(plan))}
-                {planBar(plan)}
-              </Box>
-            ))}
-            {isBusy && plans.length === 1 && <Text>{nextTurnLine(plans[0]!)}</Text>}
+            {planBar(focus)}
+            <Text dimColor size="footnote">
+              {stageLine(focus)}
+            </Text>
+            {isBusy && (
+              <Text dimColor size="footnote">
+                {nextTurnLine(focus)}
+              </Text>
+            )}
           </Box>
+        )}
+        {!isBusy && now.lastAsk !== '' && (
+          <Text dimColor size="footnote">
+            {now.lastAsk}
+          </Text>
+        )}
+        {plans.length > 1 && (
+          <Text dimColor size="footnote">
+            {plans.length - 1} other {plans.length === 2 ? 'plan' : 'plans'} · {needYou} {needYou === 1 ? 'needs' : 'need'} you
+          </Text>
         )}
       </Box>
       {divider()}
@@ -502,19 +550,25 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
         {fold('journey', plans.length > 1 ? 'Open work' : 'Journey', plans.length > 1 ? String(plans.length) : undefined)}
         {isOpen('journey') && (
           <Box flexDirection="column">
-            {plans.length === 0 && <Text>Working without a plan</Text>}
+            {plans.length === 0 && <Text dimColor>No open plan</Text>}
             {plans.length === 1 && stepper(plans[0]!)}
             {plans.length === 1 && snap.helpers.filter(helper => helper.plan !== undefined).map(helperRow)}
             {plans.length > 1 &&
               plans.map(plan => (
                 <Box flexDirection="column">
-                  {fold(`plan:${plan.path}`, plan.title, `${stageOf(plan)}${stepCount(plan)}`, false)}
-                  {snap.helpers.filter(helper => helper.plan === plan.path).map(helperRow)}
-                  {isOpen(`plan:${plan.path}`) && (
-                    <Box flexDirection="column">
-                      {stepper(plan)}
+                  <Box flexDirection="row" justifyContent="space-between" gap={1}>
+                    <Box flexDirection="row" gap={1} flexShrink={1}>
+                      <Text {...stageTone(plan)}>●</Text>
+                      <Button key={`plan:${plan.path}`} plain onPress={() => update($, opened, () => plan.path)}>
+                        {shortTitle(plan.title)}
+                      </Button>
                     </Box>
-                  )}
+                    <Box flexDirection="row" gap={1} flexShrink={0}>
+                      <Text {...stageTone(plan)}>{stageChip(plan)}</Text>
+                      <Text dimColor>›</Text>
+                    </Box>
+                  </Box>
+                  {snap.helpers.filter(helper => helper.plan === plan.path).map(helperRow)}
                 </Box>
               ))}
             {others.length > 0 && <Text dimColor>{plans.length === 0 ? 'Helpers' : 'Other work'}</Text>}
@@ -558,19 +612,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
             {snap.files.map(path => (
               <Box flexDirection="row" gap={1}>
                 {icon('file')}
-                <Button
-                  key={`file:${path}`}
-                  plain
-                  onPress={async () => {
-                    const root = await rootOf($)
-                    const text = (await readText($, `${root}/${path}`)) ?? 'This file could not be read.'
-                    const cut =
-                      text.length > READER_CAP
-                        ? `${text.slice(0, READER_CAP)}\n\nCut here; the full file is in the project.`
-                        : text
-                    await update($, reading, () => ({ path, text: cut }))
-                  }}
-                >
+                <Button key={`file:${path}`} plain onPress={() => openFile(path)}>
                   {path}
                 </Button>
               </Box>
@@ -581,7 +623,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       {divider()}
 
       <Box flexDirection="column">
-        {fold('session', 'Session', percent === undefined ? undefined : `${percent}% context`, true, () =>
+        {fold('session', 'Session', percent === undefined ? undefined : `${percent}%`, () =>
           refresh($, true),
         )}
         {isOpen('session') && (
@@ -611,7 +653,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
                 'limit',
               )}
             {details?.costUsd !== undefined &&
-              row('Cost so far', `about $${details.costUsd.toFixed(2)} (an estimate)`, 'cost')}
+              row('Cost so far', `about $${details.costUsd.toFixed(2)}`, 'cost')}
             {details !== undefined && row('Started', `${duration(details.minutes)} ago`, 'clock')}
             {details !== undefined && details.connectors.length > 0 && <Text dimColor>Connectors</Text>}
             {details?.connectors.map(one => row(one.name, thousands(one.tokens), 'plug'))}
@@ -620,6 +662,25 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       </Box>
     </Box>
   )
+}
+
+function shortTitle(title: string): string {
+  const head = title.split(':')[0]!.trim()
+  return head.length > 34 ? `${head.slice(0, 33).trimEnd()}…` : head
+}
+
+function stageChip(plan: Plan): string {
+  const stage = stageOf(plan)
+  if (stage === 'Build') return plan.total === 0 ? 'Build' : `Build ${plan.done}/${plan.total}`
+  if (stage === 'Review and verify') return 'Review'
+  return stage
+}
+
+function stageTone(plan: Plan): { color: 'success' | 'warning' } | { dimColor: true } {
+  const stage = stageOf(plan)
+  if (stage === 'Plan') return { color: 'warning' }
+  if (stage === 'Build') return { color: 'success' }
+  return { dimColor: true }
 }
 
 function percentOf(tokens: number, window: number): string {
