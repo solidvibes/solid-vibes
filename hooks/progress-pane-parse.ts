@@ -1,4 +1,4 @@
-import type { Phase, Plan, PlanStatus } from './progress-pane-state'
+import type { Phase, Plan, PlanStatus, Saved } from './progress-pane-state'
 
 export const STAGES = [
   { name: 'Plan', by: 'you' },
@@ -79,4 +79,35 @@ export function stageOf(plan: Plan): Stage {
 export function closingParagraph(text: string): string {
   const last = text.trim().split(/\n\s*\n/).at(-1)?.trim() ?? ''
   return last.length > 240 ? `${last.slice(0, 239)}…` : last
+}
+
+export const KNOWLEDGE: readonly (readonly [string, string])[] = [
+  ['AGENTS.md', 'Rule'],
+  ['docs/intent.md', 'Intent'],
+  ['docs/stack.md', 'Stack'],
+  ['docs/decisions/', 'Decision'],
+  ['docs/how-it-works/', 'How it works'],
+  ['docs/design/', 'Design'],
+  ['.agents/skills/', 'Skill'],
+]
+
+function kindOf(path: string): string | undefined {
+  return KNOWLEDGE.find(([prefix]) => (prefix.endsWith('/') ? path.startsWith(prefix) : path === prefix))?.[1]
+}
+
+export function savedRows(log: string, status: string): Saved[] {
+  const rows: Saved[] = []
+  const add = (path: string, why: string) => {
+    const kind = kindOf(path)
+    if (kind !== undefined && !rows.some(row => row.path === path)) rows.push({ path, kind, why })
+  }
+  for (const line of status.split('\n')) {
+    if (line.length > 3) add(line.slice(3).split(' -> ').at(-1)!, 'Not saved in git yet')
+  }
+  let subject = ''
+  for (const line of log.split('\n')) {
+    if (line.includes('\t')) subject = line.slice(line.indexOf('\t') + 1)
+    else if (line.trim() !== '') add(line.trim(), subject)
+  }
+  return rows.slice(0, 8)
 }

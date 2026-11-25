@@ -64,7 +64,7 @@ grep -q 'not a directory: ~/.missing' "$T/warn" || fail "missing sandbox path sh
 grep -q 'variable not set: $UNSET_SOLIDVIBES_VAR/x' "$T/warn" || fail "unset variable should warn"
 
 expect "this repo's fast checks" "$(contract_checks "$REPO" fast)" \
-  'bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh'
+  'bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh && (if command -v claude >/dev/null; then claude plugin validate .; else echo "claude CLI absent: plugin validate skipped"; fi)'
 expect "this repo's sandbox" "$(contract_field "$REPO" sandbox)" "none"
 # A real owner contract, read from a source repo's origin/main CLAUDE.md into a temp AGENTS.md.
 # The repo comes from the environment (this repo never names it); its values are never printed.

@@ -1,9 +1,8 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register } from 'claude-code'
+import type { EngineInterface, Register, SessionUsage } from 'claude-code'
 
-import { STAGES, closingParagraph, parsePlan, plansFolder, stageOf } from './progress-pane-parse'
-import type { Stage } from './progress-pane-parse'
-import type { Helper, Plan, Snapshot, Turn } from './progress-pane-state'
+import { KNOWLEDGE, STAGES, closingParagraph, parsePlan, plansFolder, savedRows, stageOf } from './progress-pane-parse'
+import type { Details, Helper, Plan, Saved, Snapshot, Tokens, Turn } from './progress-pane-state'
 
 type Engine = EngineInterface
 
@@ -18,7 +17,7 @@ const READER_CAP = 20000
 const EMPTY: Snapshot = { isGated: false, plans: [], helpers: [], files: [] }
 const IDLE: Turn = { isRunning: false, lastAsk: '', recent: [] }
 
-const snapshot = atom({ plugin: 'sv', key: 'snapshot' } as const, EMPTY, { shape: 'snapshot-1' })
+const snapshot = atom({ plugin: 'sv', key: 'snapshot' } as const, EMPTY, { shape: 'snapshot-2' })
 const turn = atom({ plugin: 'sv', key: 'turn' } as const, IDLE, { shape: 'turn-1' })
 const folds = atom({ plugin: 'sv', key: 'folds' } as const, {}, { shape: 'folds-1' })
 const reading = atom({ plugin: 'sv', key: 'reading' } as const, null, { shape: 'reading-1' })
@@ -81,14 +80,51 @@ async function refresh($: Engine, withUsage: boolean): Promise<void> {
   for (const path of [...plans.map(plan => plan.path), ...KEPT_FILES]) {
     if (await $.fs.exists(`${root}/${path}`).catch(() => false)) files.push(path)
   }
-  const usage = withUsage ? await $.session.usage().catch(() => undefined) : undefined
+  const usage = withUsage ? await $.session.usage({ breakdown: 'summary' }).catch(() => undefined) : undefined
+  const saved = await loadSaved($, root, plans)
+  const now = await $.clock.now()
   await update($, snapshot, before => ({
     isGated: true,
     plans,
     helpers,
     files,
     context: usage === undefined ? before.context : usage.context,
+    details: usage === undefined ? before.details : detailsOf(usage, now),
+    saved,
   }))
+}
+
+async function loadSaved($: Engine, root: string, plans: Plan[]): Promise<Saved[] | undefined> {
+  const dates = plans.flatMap(plan => (plan.date === undefined ? [] : [plan.date])).sort()
+  const since =
+    dates[0] ?? (await $.session.usage().then(usage => new Date(usage.startedAt).toISOString(), () => undefined))
+  if (since === undefined) return undefined
+  const paths = KNOWLEDGE.map(([path]) => path)
+  const git = (argv: string[]) => $.process.run(['git', ...argv, '--', ...paths], { cwd: root })
+  const log = await git(['log', `--since=${since}`, '--format=%h%x09%s', '--name-only']).catch(() => undefined)
+  const status = await git(['status', '--porcelain', '--untracked-files=all']).catch(() => undefined)
+  if (log?.exitCode !== 0 || status?.exitCode !== 0) return undefined
+  return savedRows(log.stdout, status.stdout)
+}
+
+function detailsOf(usage: SessionUsage, now: number): Details {
+  const breakdown = usage.context.breakdown
+  const connectors = new Map<string, number>()
+  for (const tool of breakdown?.mcpTools ?? []) {
+    connectors.set(tool.serverName, (connectors.get(tool.serverName) ?? 0) + tool.tokens)
+  }
+  const limit = usage.rateLimits.find(one => one.kind === 'five_hour')
+  const free = breakdown?.categories.filter(one => one.kind === 'free')
+  return {
+    minutes: Math.max(0, Math.floor((now - usage.startedAt) / 60000)),
+    categories: (breakdown?.categories ?? [])
+      .filter(one => one.kind === 'used' && one.tokens > 0)
+      .map(one => ({ name: one.name, tokens: one.tokens })),
+    free: free === undefined || free.length === 0 ? undefined : free.reduce((sum, one) => sum + one.tokens, 0),
+    limit: limit === undefined ? undefined : { percent: limit.percentUsed, resetsAt: limit.resetsAt },
+    costUsd: usage.cost?.usd,
+    connectors: [...connectors].map(([name, tokens]): Tokens => ({ name, tokens })),
+  }
 }
 
 async function quietly(work: () => Promise<unknown>): Promise<void> {
@@ -106,7 +142,7 @@ function steps(count: number): string {
 }
 
 function running(minutes: number): string {
-  return minutes < 1 ? 'running under a minute' : `running ${minutes} min`
+  return `running ${duration(minutes)}`
 }
 
 function stageLine(plan: Plan): string {
@@ -265,6 +301,13 @@ export const register: Register = on => {
     const others = snap.helpers.filter(helper => helper.plan === undefined)
     const percent = snap.context?.percent
     const firstApproved = plans.find(plan => plan.status === 'Approved')
+    const details = snap.details
+    const tokenRow = (name: string, tokens: number) => (
+      <Text>
+        {'  '}
+        {name} <Text dimColor>· {thousands(tokens)} tokens</Text>
+      </Text>
+    )
 
     return (
       <Box flexDirection="column">
@@ -318,6 +361,18 @@ export const register: Register = on => {
           </Box>
         )}
 
+        {snap.saved !== undefined && header('saved', 'Saved to the project')}
+        {snap.saved !== undefined && isOpen('saved') && (
+          <Box flexDirection="column" paddingLeft={2}>
+            {snap.saved.length === 0 && <Text dimColor>Nothing new saved yet.</Text>}
+            {snap.saved.map(row => (
+              <Text>
+                {row.kind} · {baseName(row.path)} <Text dimColor>· {row.why}</Text>
+              </Text>
+            ))}
+          </Box>
+        )}
+
         {header('files', 'Files')}
         {isOpen('files') && (
           <Box flexDirection="column" paddingLeft={2}>
@@ -365,6 +420,22 @@ export const register: Register = on => {
                   : `Type /clear, then paste: go ${firstApproved.path}`}
               </Text>
             )}
+            {details !== undefined && details.categories.map(row => tokenRow(row.name, row.tokens))}
+            {details?.free !== undefined && tokenRow('Free space', details.free)}
+            {details?.limit !== undefined && (
+              <Text>
+                Usage limit: {details.limit.percent}% of the five-hour window used
+                {details.limit.resetsAt === undefined ? '' : `, resets at ${clockTime(details.limit.resetsAt)}`}
+              </Text>
+            )}
+            {details?.costUsd !== undefined && (
+              <Text>
+                Cost so far: about ${details.costUsd.toFixed(2)} <Text dimColor>(an estimate)</Text>
+              </Text>
+            )}
+            {details !== undefined && <Text>Started {duration(details.minutes)} ago</Text>}
+            {details !== undefined && details.connectors.length > 0 && <Text>Connectors</Text>}
+            {details?.connectors.map(row => tokenRow(row.name, row.tokens))}
           </Box>
         )}
       </Box>
@@ -378,4 +449,15 @@ function isOpenIn(folded: Record<string, boolean>, id: string): boolean {
 
 function thousands(tokens: number): string {
   return tokens >= 1000 ? `${Math.round(tokens / 1000)}k` : String(tokens)
+}
+
+function duration(minutes: number): string {
+  if (minutes < 1) return 'under a minute'
+  if (minutes < 60) return `${minutes} min`
+  return `${Math.floor(minutes / 60)} h ${minutes % 60} min`
+}
+
+function clockTime(iso: string): string {
+  const at = new Date(iso)
+  return `${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}`
 }

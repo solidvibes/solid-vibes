@@ -1,6 +1,6 @@
 # Progress pane
 
-**Status:** Planned. Phase 1 (where we are) is built; phase 2 (what was kept, session details) is next. How it looks in a real Claude Code session is owner-checked, not tested here.
+**Status:** Built. How it looks in a real Claude Code session is owner-checked, not tested here.
 
 > A pane beside the chat that answers at a glance: where are we, do you need me, what was kept. It works in the Claude app, where the status bar is not shown.
 
@@ -17,6 +17,7 @@
   ○ Review and verify · AI
   ○ Check it works · you
   ○ Release · you
+▸ Saved to the project
 ▸ Files
 ▸ Session · 42% context
 ```
@@ -33,8 +34,9 @@ In a Solid Vibes project it opens at the start of a session and adds `/progress`
 |---|---|---|
 | Now | `Running on its own` while the main turn runs; `Still working: N helpers running` when the main turn ended but sub-agents still run; else `Your turn` with the last paragraph of the AI's answer. Each open plan's stage, the ones that need you first, and with one plan the next time you are needed, `after N more steps` | yes |
 | Journey (one plan) / Open work (several) | Plan → Build → Review and verify → Check it works → Release, each marked `you` or `AI`, the current one `here`; Build lists the plan's phases with their step counts. Several plans are one foldable card each. Running sub-agents sit under the plan their description names, the rest under `Other work`. With no open plan: `Working without a plan`, running helpers and the last five files changed this chat | yes |
+| Saved to the project | What the project learned since the oldest open plan's date (else since the session started): up to eight files under `AGENTS.md`, `docs/intent.md`, `docs/stack.md`, `docs/decisions/`, `docs/how-it-works/`, `docs/design/` and `.agents/skills/`, newest first, each with its kind (Rule, Intent, Stack, Decision, How it works, Design, Skill) and the commit that saved it, or `Not saved in git yet`. Hidden when git is missing or fails | no |
 | Files | The open plans, `.solidvibes/handover.md` and `docs/intent.md`, those that exist. Pressing one shows it in the pane, cut at 20,000 characters, with Back | no |
-| Session | How full the AI's memory (context) is, with the percent in the header. At 80% it says to start fresh: `/clear`, then `go <plan>` for an approved plan, else that the handover keeps your place | no |
+| Session | How full the AI's memory (context) is, with the percent in the header. At 80% it says to start fresh: `/clear`, then `go <plan>` for an approved plan, else that the handover keeps your place. Then, where the reading has them: what fills the context by category, the free space, the five-hour usage limit and when it resets, the cost so far (an estimate), how long ago the session started, and the tokens each connector's tools take | no |
 
 It never estimates time. Steps left are counted instead.
 
@@ -47,6 +49,7 @@ Plans and files come from the project, so the pane survives `/compact` and a new
 - **Stage**: Draft is Plan (you approve it); Approved with unchecked steps is Build; Approved with every step checked is Review and verify.
 - **Steps**: every `- [ ]` and `- [x]`, except those under `## Verification` and those for the owner only (the line says `only the user`, `owner-only` or `(you)`). Phases are `##` or `###` headings that start with `Phase`.
 - **Sub-agents**: the session's agent list, those not completed, failed or killed.
+- **Saved**: `git log --since=<date>` and `git status --porcelain` over those paths, run read-only in the project.
 
 It refreshes at the start of a session, when the main turn starts and ends, after a file is written, on `/progress`, and when Session is unfolded. Fold state is kept per section.
 

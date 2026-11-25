@@ -1,5 +1,5 @@
 import { expect, test } from 'claude-code/testing'
-import type { AgentInfo, On, RenderSurface } from 'claude-code'
+import type { AgentInfo, On, ProcessRunResult, RenderSurface, SessionUsage } from 'claude-code'
 import type { Engine, Mounted } from 'claude-code/testing'
 
 import { parsePlan, plansFolder, stageOf } from './progress-pane-parse'
@@ -66,12 +66,30 @@ function agent(fields: Partial<AgentInfo>): AgentInfo {
   }
 }
 
-type Project = { files?: Record<string, string>; agents?: AgentInfo[]; percent?: number }
+type Project = {
+  files?: Record<string, string>
+  agents?: AgentInfo[]
+  percent?: number
+  usage?: Partial<SessionUsage>
+  git?: (argv: readonly string[]) => ProcessRunResult
+}
 
-function project(on: On, { files = {}, agents = [], percent = 42 }: Project): { opened: string[] } {
+function ran(exitCode: number, stdout = ''): ProcessRunResult {
+  return { exitCode, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false }
+}
+
+function project(
+  on: On,
+  { files = {}, agents = [], percent = 42, usage = {}, git = () => ran(128) }: Project,
+): { opened: string[]; runs: (readonly string[])[] } {
   const all: Record<string, string> = { '.solidvibes/manifest.json': '{}', ...files }
   const paths = Object.keys(all).map(path => `${ROOT}/${path}`)
   const opened: string[] = []
+  const runs: (readonly string[])[] = []
+  on('process.run', (_, e) => {
+    runs.push(e.argv)
+    return { value: git(e.argv) }
+  })
   on('session.root', () => ({ value: ROOT }))
   on('session.cwd', () => ({ value: ROOT }))
   on('clock.now', () => ({ value: NOW }))
@@ -82,7 +100,12 @@ function project(on: On, { files = {}, agents = [], percent = 42 }: Project): { 
     return { value: { isPlaced: true } }
   })
   on('session.usage', () => ({
-    value: { startedAt: NOW, context: { percent, tokens: percent * 2000, window: 200000 }, rateLimits: [] },
+    value: {
+      startedAt: NOW - 65 * 60000,
+      context: { percent, tokens: percent * 2000, window: 200000 },
+      rateLimits: [],
+      ...usage,
+    },
   }))
   on('fs.exists', (_, e) => ({ value: paths.some(path => path === e.path || path.startsWith(`${e.path}/`)) }))
   on('fs.read', (_, e) => {
@@ -104,7 +127,7 @@ function project(on: On, { files = {}, agents = [], percent = 42 }: Project): { 
   on('turn.start', (_, e) => ({ turnId: e.turnId }))
   on('turn.complete', (_, e) => ({ text: e.answer }))
   on('tool.call', () => ({ result: {} }))
-  return { opened }
+  return { opened, runs }
 }
 
 async function start($: Engine): Promise<void> {
@@ -282,4 +305,109 @@ test('a value an earlier version stored is declined', async ($, on) => {
   await everySurface($, async (_, text) => {
     expect(text).toContain('This is not a Solid Vibes project.')
   })
+})
+
+const LOG = `a1b2c3d\tPick the database
+
+docs/decisions/2026-11-25-database.md
+AGENTS.md
+e4f5a6b\tExplain sign-in
+
+docs/how-it-works/sign-in.md
+docs/decisions/2026-11-25-database.md
+`
+
+test('what was saved to the project comes from git, newest first', async ($, on) => {
+  const { runs } = project(on, {
+    files: { 'AGENTS.md': CONTRACT, 'docs/plans/2026-11-25-progress-pane.md': BUILDING },
+    git: argv => ran(0, argv[1] === 'log' ? LOG : '?? docs/design/brand.md\n M src/app.ts\n'),
+  })
+  await start($)
+
+  expect(runs[0]).toContain('--since=2026-11-25')
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...PANE, surface })
+    await ui.press({ key: 'fold:saved' })
+    const rows = (await ui.findAll({ type: 'Text', text: /^(Design|Decision|Rule|How it works) · / })).map(row => row.text)
+    expect(rows).toEqual([
+      'Design · brand.md · Not saved in git yet',
+      'Decision · 2026-11-25-database.md · Pick the database',
+      'Rule · AGENTS.md · Pick the database',
+      'How it works · sign-in.md · Explain sign-in',
+    ])
+    await ui.press({ key: 'fold:saved' })
+    await ui.unmount()
+  }
+})
+
+test('without git the saved section is hidden', async ($, on) => {
+  project(on, { git: () => ran(128) })
+  await start($)
+
+  await everySurface($, async (_, text) => {
+    expect(text).not.toContain('Saved to the project')
+  })
+})
+
+test('session details show what the reading has, and leave out what it lacks', async ($, on) => {
+  project(on, {
+    usage: {
+      context: {
+        percent: 30,
+        tokens: 60000,
+        window: 200000,
+        breakdown: {
+          categories: [
+            { name: 'System prompt', tokens: 3000, color: 'x', isDeferred: false, kind: 'used' },
+            { name: 'Messages', tokens: 50000, color: 'x', isDeferred: false, kind: 'used' },
+            { name: 'Free space', tokens: 140000, color: 'x', isDeferred: false, kind: 'free' },
+          ],
+          mcpTools: [
+            { name: 'mcp__docs__read', serverName: 'docs', tokens: 1500, isLoaded: true },
+            { name: 'mcp__docs__write', serverName: 'docs', tokens: 1500, isLoaded: true },
+          ],
+        } as unknown as NonNullable<SessionUsage['context']['breakdown']>,
+      },
+      rateLimits: [{ kind: 'five_hour', percentUsed: 23 }],
+      cost: { usd: 1.234 },
+    },
+  })
+  await start($)
+
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...PANE, surface })
+    await ui.press({ key: 'fold:session' })
+    const text = await words(ui)
+    for (const line of [
+      'Session · 30% context',
+      'Messages · 50k tokens',
+      'Free space · 140k tokens',
+      'Usage limit: 23% of the five-hour window used',
+      'Cost so far: about $1.23 (an estimate)',
+      'Started 1 h 5 min ago',
+      'docs · 3k tokens',
+    ]) {
+      expect(text).toContain(line)
+    }
+    await ui.press({ key: 'fold:session' })
+    await ui.unmount()
+  }
+})
+
+test('session details without a breakdown, limit or cost show the rest', async ($, on) => {
+  project(on, {})
+  await start($)
+
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...PANE, surface })
+    await ui.press({ key: 'fold:session' })
+    const text = await words(ui)
+    expect(text).toContain('42% of the context used')
+    expect(text).toContain('Started 1 h 5 min ago')
+    expect(text).not.toContain('Usage limit')
+    expect(text).not.toContain('Cost so far')
+    expect(text).not.toContain('Connectors')
+    await ui.press({ key: 'fold:session' })
+    await ui.unmount()
+  }
 })
