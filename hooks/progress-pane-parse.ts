@@ -39,13 +39,16 @@ export function parsePlan(path: string, text: string): Plan | undefined {
   const status = statusOf(text)
   if (status === null) return undefined
   const title = (/^# (.*)$/m.exec(text)?.[1] ?? path).replace(/^Plan:\s*/i, '').trim()
-  const date = /^\*\*Date\*\*:\s*(\S+)/m.exec(text)?.[1]
+  const date = /^\*\*Date\*\*:\s*(\d{4}-\d{2}-\d{2})\b/m.exec(text)?.[1]
   const phases: Phase[] = []
   let phase: { level: number; phase: Phase } | undefined
   let isVerification = false
+  let isFenced = false
   let done = 0
   let total = 0
   for (const line of text.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) isFenced = !isFenced
+    if (isFenced) continue
     const heading = /^(#{2,6})\s+(.*)$/.exec(line)
     if (heading !== null) {
       const level = heading[1]!.length

@@ -10,7 +10,7 @@ const PANE = 'sv-progress'
 const MANIFEST = '.solidvibes/manifest.json'
 const KEPT_FILES = ['.solidvibes/handover.md', 'docs/intent.md']
 const WRITE_TOOLS = new Set(['Edit', 'Write', 'MultiEdit', 'NotebookEdit'])
-const ENDED = new Set(['completed', 'failed', 'killed'])
+const RESTING = new Set(['idle', 'completed', 'failed', 'killed'])
 const OPEN_BY_DEFAULT: Record<string, boolean> = { now: true, journey: true }
 const READER_CAP = 20000
 
@@ -51,11 +51,11 @@ async function loadPlans($: Engine, root: string): Promise<Plan[]> {
   return []
 }
 
-async function loadHelpers($: Engine, plans: Plan[]): Promise<Helper[]> {
+async function loadHelpers($: Engine, plans: Plan[], ended?: string): Promise<Helper[]> {
   const agents = await $.agent.list().catch(() => [])
   const now = await $.clock.now()
   return agents
-    .filter(agent => !ENDED.has(agent.status))
+    .filter(agent => !RESTING.has(agent.status) && agent.id !== ended)
     .map(agent => ({
       id: agent.id,
       description: agent.description,
@@ -68,16 +68,16 @@ function baseName(path: string): string {
   return path.slice(path.lastIndexOf('/') + 1)
 }
 
-async function refresh($: Engine, withUsage: boolean): Promise<void> {
+async function refresh($: Engine, withUsage: boolean, ended?: string): Promise<void> {
   const root = await rootOf($)
   if (!(await isGated($, root))) {
     await update($, snapshot, () => EMPTY)
     return
   }
   const plans = await loadPlans($, root)
-  const helpers = await loadHelpers($, plans)
-  const files: string[] = []
-  for (const path of [...plans.map(plan => plan.path), ...KEPT_FILES]) {
+  const helpers = await loadHelpers($, plans, ended)
+  const files = plans.map(plan => plan.path)
+  for (const path of KEPT_FILES) {
     if (await $.fs.exists(`${root}/${path}`).catch(() => false)) files.push(path)
   }
   const usage = withUsage ? await $.session.usage({ breakdown: 'summary' }).catch(() => undefined) : undefined
@@ -88,7 +88,10 @@ async function refresh($: Engine, withUsage: boolean): Promise<void> {
     plans,
     helpers,
     files,
-    context: usage === undefined ? before.context : usage.context,
+    context:
+      usage === undefined
+        ? before.context
+        : { percent: usage.context.percent, tokens: usage.context.tokens, window: usage.context.window },
     details: usage === undefined ? before.details : detailsOf(usage, now),
     saved,
   }))
@@ -97,11 +100,16 @@ async function refresh($: Engine, withUsage: boolean): Promise<void> {
 async function loadSaved($: Engine, root: string, plans: Plan[]): Promise<Saved[] | undefined> {
   const dates = plans.flatMap(plan => (plan.date === undefined ? [] : [plan.date])).sort()
   const since =
-    dates[0] ?? (await $.session.usage().then(usage => new Date(usage.startedAt).toISOString(), () => undefined))
+    dates[0] === undefined
+      ? await $.session.usage().then(usage => new Date(usage.startedAt).toISOString(), () => undefined)
+      : `${dates[0]} 00:00`
   if (since === undefined) return undefined
   const paths = KNOWLEDGE.map(([path]) => path)
-  const git = (argv: string[]) => $.process.run(['git', ...argv, '--', ...paths], { cwd: root })
-  const log = await git(['log', `--since=${since}`, '--format=%h%x09%s', '--name-only']).catch(() => undefined)
+  const git = (argv: string[]) =>
+    $.process.run(['git', '--no-optional-locks', ...argv, '--', ...paths], { cwd: root })
+  const log = await git(['log', `--since=${since}`, '--max-count=50', '--format=%h%x09%s', '--name-only']).catch(
+    () => undefined,
+  )
   const status = await git(['status', '--porcelain', '--untracked-files=all']).catch(() => undefined)
   if (log?.exitCode !== 0 || status?.exitCode !== 0) return undefined
   return savedRows(log.stdout, status.stdout)
@@ -145,12 +153,16 @@ function running(minutes: number): string {
   return `running ${duration(minutes)}`
 }
 
+function stepCount(plan: Plan): string {
+  return plan.total === 0 ? '' : ` · ${plan.done} of ${steps(plan.total)}`
+}
+
 function stageLine(plan: Plan): string {
   const stage = stageOf(plan)
   if (stage === 'Plan') return 'Plan · waiting for you to approve it'
   if (stage === 'Review and verify') return 'Review and verify · all steps built'
   const phase = plan.phases.find(one => one.done < one.total)
-  return `Build · ${plan.done} of ${steps(plan.total)}${phase === undefined ? '' : ` · ${phase.name}`}`
+  return `Build${stepCount(plan)}${phase === undefined ? '' : ` · ${phase.name}`}`
 }
 
 function nextTurnLine(plan: Plan): string {
@@ -197,13 +209,12 @@ export const register: Register = on => {
 
   on('turn.complete', async ($, e, next) => {
     const ran = await next(e)
-    if (e.agentId === undefined) {
-      await quietly(async () => {
-        if (!(await isGated($, await rootOf($)))) return
-        await update($, turn, before => ({ ...before, isRunning: false, lastAsk: closingParagraph(e.answer) }))
-        await refresh($, true)
-      })
-    }
+    await quietly(async () => {
+      if (!(await isGated($, await rootOf($)))) return
+      if (e.agentId !== undefined) return refresh($, false, e.agentId)
+      await update($, turn, before => ({ ...before, isRunning: false, lastAsk: closingParagraph(e.answer) }))
+      await refresh($, true)
+    })
     return ran
   }).catch(($, e, next) => next(e))
 
@@ -220,7 +231,7 @@ export const register: Register = on => {
         ...before,
         recent: [...before.recent.filter(one => one !== file), file].slice(-5),
       }))
-      await refresh($, false)
+      if (file.endsWith('.md')) await refresh($, false)
     })
     return ran
   }).catch(($, e, next) => next(e))
@@ -339,7 +350,7 @@ export const register: Register = on => {
             {plans.length > 1 &&
               plans.map(plan => (
                 <Box flexDirection="column">
-                  {header(`plan:${plan.path}`, `${plan.title} · ${stageOf(plan)} · ${plan.done} of ${steps(plan.total)}`)}
+                  {header(`plan:${plan.path}`, `${plan.title} · ${stageOf(plan)}${stepCount(plan)}`)}
                   {snap.helpers.filter(helper => helper.plan === plan.path).map(helperRow)}
                   {isOpen(`plan:${plan.path}`) && (
                     <Box flexDirection="column" paddingLeft={2}>

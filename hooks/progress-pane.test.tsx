@@ -165,6 +165,13 @@ test('a plan status is read from the body first, then the frontmatter', async ()
   expect(plan && stageOf(plan)).toBe('Build')
 })
 
+test('steps and headings inside a code block are not counted', async () => {
+  const fenced = `${BUILDING}\n## Notes\n\`\`\`\n## Phase 3 — Example\n- [ ] Not a step\n\`\`\`\n`
+  const plan = parsePlan('e.md', fenced)
+  expect([plan?.done, plan?.total, plan?.phases.length]).toEqual([2, 4, 2])
+  expect(parsePlan('f.md', '# F\n**Date**: YYYY-MM-DD\n**Status**: Draft\n')?.date).toBeUndefined()
+})
+
 test('outside a Solid Vibes project nothing opens and calls pass through', async ($, on) => {
   const opened: string[] = []
   on('session.root', () => ({ value: ROOT }))
@@ -260,6 +267,28 @@ test('a helper still running after the main turn shows Still working', async ($,
   })
 })
 
+test('a helper ending its run turns Still working into Your turn', async ($, on) => {
+  project(on, { agents: [agent({}), agent({ id: 'a3', status: 'idle' })] })
+  await start($)
+  await $.turn.complete({ answer: 'Started a review.', durationMs: 1, isAborted: false, turnId: 't1', reason: 'answer' })
+  await $.turn.complete({ answer: 'Reviewed.', durationMs: 1, isAborted: false, turnId: 't2', reason: 'answer', agentId: 'a1' })
+
+  await everySurface($, async (_, text) => {
+    expect(text).toContain('Your turn')
+    expect(text).not.toContain('Still working')
+  })
+})
+
+test('writing code refreshes no git, writing a Markdown file does', async ($, on) => {
+  const { runs } = project(on, {})
+  await start($)
+  const before = runs.length
+  await $.tool.call({ tool: 'Write', file_path: `${ROOT}/src/app.ts`, content: 'x' })
+  expect(runs.length).toBe(before)
+  await $.tool.call({ tool: 'Write', file_path: `${ROOT}/docs/intent.md`, content: 'x' })
+  expect(runs.length).toBeGreaterThan(before)
+})
+
 test('with no helper running the main turn ending is your turn, with the last ask', async ($, on) => {
   project(on, {})
   await start($)
@@ -320,11 +349,12 @@ docs/decisions/2026-11-25-database.md
 test('what was saved to the project comes from git, newest first', async ($, on) => {
   const { runs } = project(on, {
     files: { 'AGENTS.md': CONTRACT, 'docs/plans/2026-11-25-progress-pane.md': BUILDING },
-    git: argv => ran(0, argv[1] === 'log' ? LOG : '?? docs/design/brand.md\n M src/app.ts\n'),
+    git: argv => ran(0, argv[2] === 'log' ? LOG : '?? docs/design/brand.md\n M src/app.ts\n'),
   })
   await start($)
 
-  expect(runs[0]).toContain('--since=2026-11-25')
+  expect(runs[0]).toContain('--since=2026-11-25 00:00')
+  expect(runs[0]).toContain('--no-optional-locks')
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...PANE, surface })
     await ui.press({ key: 'fold:saved' })

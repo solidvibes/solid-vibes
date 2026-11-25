@@ -47,11 +47,11 @@ Plans and files come from the project, so the pane survives `/compact` and a new
 - **Plans folder**: the folder of the first backticked path on the Factory contract's `plans` line in `AGENTS.md`; with `none`, no line or no `AGENTS.md`, `docs/plans/` then `plans/`.
 - **A plan's status**: the first word after `**Status**:` in the body, else the frontmatter `status:` (`draft` → Draft, `not-started` → Approved, `implemented` → Implemented, `deferred` → Deferred, `idea` hidden). Only Draft and Approved plans show.
 - **Stage**: Draft is Plan (you approve it); Approved with unchecked steps is Build; Approved with every step checked is Review and verify.
-- **Steps**: every `- [ ]` and `- [x]`, except those under `## Verification` and those for the owner only (the line says `only the user`, `owner-only` or `(you)`). Phases are `##` or `###` headings that start with `Phase`.
-- **Sub-agents**: the session's agent list, those not completed, failed or killed.
-- **Saved**: `git log --since=<date>` and `git status --porcelain` over those paths, run read-only in the project.
+- **Steps**: every `- [ ]` and `- [x]` outside code blocks, except those under `## Verification` and those for the owner only (the line says `only the user`, `owner-only` or `(you)`). Phases are `##` or `###` headings that start with `Phase`.
+- **Sub-agents**: the session's agent list, those still at work (not idle, completed, failed or killed).
+- **Saved**: `git log --since=<date>` and `git status --porcelain` over those paths, run without taking git's locks, so they never get in the way of the AI's own git commands.
 
-It refreshes at the start of a session, when the main turn starts and ends, after a file is written, on `/progress`, and when Session is unfolded. Fold state is kept per section.
+It refreshes at the start of a session, when the main turn starts and ends, when a helper's turn ends, after a Markdown file is written, on `/progress`, and when Session is unfolded. Fold state is kept per section.
 
 ## The code
 
