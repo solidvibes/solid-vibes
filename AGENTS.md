@@ -50,8 +50,8 @@ Solid Vibes is a setup for builders. Anyone can be a builder. Skills are written
 
 ## Factory
 
-- **layers** — skill (`skills/*/SKILL.md`) → reads the project contract (`.solidvibes/factory-contract.md` spec) → calls `bin/solidvibes` (`lib/cli-*.sh`) → writes the project (`init` templates) · plugin: `.claude-plugin/marketplace.json` → `plugin.json` → `skills/`, `bin/`, `hooks/hooks.json`
-- **checks** — fast: `bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh` · full: `bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh --history && tests/run.sh && (if command -v claude >/dev/null; then claude plugin validate .; else echo "claude CLI absent: plugin validate skipped"; fi)`
+- **layers** — skill (`skills/*/SKILL.md`) → reads the project contract (`.solidvibes/factory-contract.md` spec) → calls `bin/solidvibes` (`lib/cli-*.sh`) → writes the project (`init` templates) · plugin: `.claude-plugin/marketplace.json` → `plugin.json` → `skills/`, `bin/`, `hooks/hooks.json` (command hooks, and the progress pane module `hooks/progress-pane.tsx`)
+- **checks** — fast: `bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh && (if command -v claude >/dev/null; then claude plugin validate .; else echo "claude CLI absent: plugin validate skipped"; fi)` · full: `bash -n bin/solidvibes lib/*.sh scripts/*.sh && bin/solidvibes lint . && scripts/strip-check.sh --history && tests/run.sh && (if command -v claude >/dev/null; then claude plugin validate . && claude plugin test .; else echo "claude CLI absent: plugin validate and test skipped"; fi)`
 - **codegen** — none
 - **run** — `bin/solidvibes init --profile setup/profiles/blank tests/.tmp/demo` then run the demo's contract `checks`; in Claude: `/plugin marketplace add ./` and `/plugin install sv@solid-vibes` in a scratch folder under the scratchpad
 - **plans** — `docs/plans/YYYY-MM-DD-<slug>.md` (private, git-excluded)

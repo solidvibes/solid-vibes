@@ -81,6 +81,8 @@ Craft skills say how to do one thing well, on any stack. The AI uses them inside
 
 Your project keeps its memory in `docs/`: why it exists, how it works and what was decided, each decision with its date and reason. The AI reads it first and keeps it true.
 
+In Claude Code, a Progress pane beside the chat shows where the project stands and when it needs you; type `/progress` to open it again. [How it works](docs/how-it-works/progress-pane.md).
+
 ## Pro
 
 Solid Vibes Pro adds ready-made rules for building Flutter apps with Supabase, and goes deeper than the free basics: layouts for every screen size, a designer's review of each screen, and security checklists per stack. It is a separate, paid plugin. Everything in this repo works without it.
