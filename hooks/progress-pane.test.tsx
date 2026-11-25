@@ -203,9 +203,32 @@ test('one plan mid-build is here on Build, with the steps left before your turn'
   expect(opened).toEqual(['sv-progress'])
   await everySurface($, async (_, text) => {
     expect(text).toContain('Running on its own')
-    expect(text).toMatch(/Build · AI · here/)
+    expect(text).toContain('▸ Build\nAI · here')
     expect(text).toContain('Your next turn: check it works · after 2 more steps')
-    expect(text).toContain('Phase 2 — What was kept · 0 of 2 steps')
+    expect(text).toContain('▸ Phase 2 — What was kept\n0 of 2 steps')
+  })
+})
+
+test('a phase with no steps shows no step count', async ($, on) => {
+  const plan = BUILDING.replace('## Phase 2', '## Phase 0 — Setup\nNothing to tick.\n\n## Phase 2')
+  project(on, { files: { 'AGENTS.md': CONTRACT, 'docs/plans/2026-11-25-progress-pane.md': plan } })
+  await start($)
+
+  await everySurface($, async (_, text) => {
+    expect(text).toContain('Phase 0 — Setup')
+    expect(text).not.toContain('0 of 0')
+  })
+})
+
+test('the state is coloured and pictures are drawn only where Svg is', async ($, on) => {
+  project(on, {})
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+
+  await everySurface($, async ui => {
+    expect((await ui.find({ type: 'Text', text: '● Running on its own' }))?.props.color).toBe('success')
+    const pictures = await ui.findAll({ type: 'Svg' })
+    expect(pictures.length > 0).toBe(ui.surface !== 'terminal')
   })
 })
 
@@ -220,7 +243,7 @@ test('several plans list the one that needs you first', async ($, on) => {
   await start($)
 
   await everySurface($, async (_, text) => {
-    expect(text).toContain('2 open · 1 needs you')
+    expect(text).toContain('2 open\n1 needs you')
     expect(text).toContain('Open work')
     expect(text.indexOf('Dark mode')).toBeLessThan(text.indexOf('Progress pane'))
   })
@@ -263,7 +286,7 @@ test('a helper still running after the main turn shows Still working', async ($,
 
   await everySurface($, async (_, text) => {
     expect(text).toContain('Still working: 1 helper running')
-    expect(text).toContain('Review the change · running 5 min')
+    expect(text).toContain('Review the change\nrunning 5 min')
   })
 })
 
@@ -321,7 +344,7 @@ test('a file opens in the reader and Back returns', async ($, on) => {
     await ui.press({ key: 'fold:files' })
     await ui.press({ key: 'fold:session' })
     const text = await words(ui)
-    expect(text).toContain('Session · 85% context')
+    expect(text).toContain('Session\n⌄\n85% context')
     expect(text).toContain('Type /clear. The handover keeps your place.')
     await ui.press({ key: 'fold:session' })
     await ui.unmount()
@@ -358,13 +381,14 @@ test('what was saved to the project comes from git, newest first', async ($, on)
   for (const surface of SURFACES) {
     const ui = await $.ui.mount({ ...PANE, surface })
     await ui.press({ key: 'fold:saved' })
-    const rows = (await ui.findAll({ type: 'Text', text: /^(Design|Decision|Rule|How it works) · / })).map(row => row.text)
-    expect(rows).toEqual([
-      'Design · brand.md · Not saved in git yet',
-      'Decision · 2026-11-25-database.md · Pick the database',
-      'Rule · AGENTS.md · Pick the database',
-      'How it works · sign-in.md · Explain sign-in',
-    ])
+    expect(await words(ui)).toContain(
+      [
+        'brand.md\nDesign · Not saved in git yet',
+        '2026-11-25-database.md\nDecision · Pick the database',
+        'AGENTS.md\nRule · Pick the database',
+        'sign-in.md\nHow it works · Explain sign-in',
+      ].join('\n'),
+    )
     await ui.press({ key: 'fold:saved' })
     await ui.unmount()
   }
@@ -409,13 +433,15 @@ test('session details show what the reading has, and leave out what it lacks', a
     await ui.press({ key: 'fold:session' })
     const text = await words(ui)
     for (const line of [
-      'Session · 30% context',
-      'Messages · 50k tokens',
-      'Free space · 140k tokens',
-      'Usage limit: 23% of the five-hour window used',
-      'Cost so far: about $1.23 (an estimate)',
-      'Started 1 h 5 min ago',
-      'docs · 3k tokens',
+      'Session\n⌄\n30% context',
+      '■ Messages',
+      '50k tokens · 25%',
+      '■ Free space',
+      '140k tokens · 70%',
+      'Usage limit\n23% of five hours',
+      'Cost so far\nabout $1.23 (an estimate)',
+      'Started\n1 h 5 min ago',
+      'docs\n3k tokens',
     ]) {
       expect(text).toContain(line)
     }
@@ -433,7 +459,7 @@ test('session details without a breakdown, limit or cost show the rest', async (
     await ui.press({ key: 'fold:session' })
     const text = await words(ui)
     expect(text).toContain('42% of the context used')
-    expect(text).toContain('Started 1 h 5 min ago')
+    expect(text).toContain('Started\n1 h 5 min ago')
     expect(text).not.toContain('Usage limit')
     expect(text).not.toContain('Cost so far')
     expect(text).not.toContain('Connectors')

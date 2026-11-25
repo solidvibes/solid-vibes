@@ -5,22 +5,30 @@
 > A pane beside the chat that answers at a glance: where are we, do you need me, what was kept. It works in the Claude app, where the status bar is not shown.
 
 ```
-▾ Now
-  Running on its own
-  Progress pane · Build · 5 of 8 steps · Phase 2 — What was kept
+Now ⌄
+  ● Running on its own                          (green; amber for Your turn)
+  Progress pane              Build · 5 of 8 steps · Phase 2 — What was kept
   Your next turn: check it works · after 3 more steps
-▾ Journey
-  ✓ Plan · you
-  ▸ Build · AI · here
-      ✓ Phase 1 — Where we are · 5 of 5 steps
-      ▸ Phase 2 — What was kept · 0 of 3 steps
-  ○ Review and verify · AI
-  ○ Check it works · you
-  ○ Release · you
-▸ Saved to the project
-▸ Files
-▸ Session · 42% context
+────────────────────────────────────────────
+Journey ⌄
+  ✓ Plan                                                          you
+  ▸ Build                                                   AI · here
+      ✓ Phase 1 — Where we are                             5 of 5 steps
+      ▸ Phase 2 — What was kept                            0 of 3 steps
+  ○ Review and verify                                              AI
+  ○ Check it works                                                you
+  ○ Release                                                       you
+────────────────────────────────────────────
+Saved to the project ›                                              4
+────────────────────────────────────────────
+Files ›                                                             3
+────────────────────────────────────────────
+Session ›                                                 42% context
 ```
+
+## How it looks
+
+Like the app's own side panel: section titles as headings with a line between sections, the fold mark (`›` closed, `⌄` open) after the title and the count on the right, and each row a label on the left with its value on the right in grey. Colour is kept for the state: green while it works, amber when it is your turn, and red ready for when the pane can tell it is stuck. These are the theme's own success, warning and error colours, so they follow the person's light or dark theme. In the desktop app, VS Code and the phone, rows carry small line icons and Session draws the context as one thin bar, a colour per category, with a legend of coloured squares, tokens and percents; the terminal has no pictures, so it draws a line of characters for the dividers and the bar. An engine that refuses these newer props draws the same pane without the pictures and heading sizes. A phase with no steps shows no count.
 
 ## When it acts
 

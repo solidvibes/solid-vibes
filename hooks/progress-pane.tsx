@@ -1,5 +1,5 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register, SessionUsage } from 'claude-code'
+import type { EngineInterface, Register, RenderElement, RenderInput, RenderNode, SessionUsage } from 'claude-code'
 
 import { KNOWLEDGE, STAGES, closingParagraph, parsePlan, plansFolder, savedRows, stageOf } from './progress-pane-parse'
 import type { Details, Helper, Plan, Saved, Snapshot, Tokens, Turn } from './progress-pane-state'
@@ -236,112 +236,192 @@ export const register: Register = on => {
     return ran
   }).catch(($, e, next) => next(e))
 
-  on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
-    const { Box, Text, Button, Markdown } = $.ui.resolve(e)
-    const snap = await read($, snapshot)
-    const now = await read($, turn)
-    const folded = await read($, folds)
-    const open = await read($, reading)
+  on('ui.render', { component: 'Pane', requestId: PANE }, ($, e) => drawPane($, e, true)).catch(($, e) =>
+    drawPane($, e, false),
+  )
+}
 
-    if (!snap.isGated) return <Text dimColor>This is not a Solid Vibes project.</Text>
+const TONE = { running: 'success', yourTurn: 'warning', stuck: 'error' } as const
+const MUTED = '#8a8a8a'
+const LINE = 'rgba(128,128,128,0.35)'
+const SEGMENTS = ['#4f7ce8', '#2fa66a', '#d08a1f', '#a66ee0', '#d0567a', '#3aa6b8', '#9a8f3a']
+const ICONS = {
+  file: 'M14 3H6v18h12V7zM14 3v4h4',
+  helper: 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6',
+  saved: 'M6 3h12v18l-6-4-6 4z',
+  clock: 'M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',
+  limit: 'M4 18a8 8 0 1 1 16 0M12 18l4-6',
+  cost: 'M3 7h18v10H3zM12 10v4',
+  plug: 'M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0zM12 16v5',
+} as const
 
-    if (open !== null) {
-      return (
-        <Box flexDirection="column">
-          <Button key="back" onPress={() => update($, reading, () => null)}>
-            Back
-          </Button>
-          <Text dimColor>{open.path}</Text>
-          <Markdown text={open.text} />
-        </Box>
-      )
-    }
+type Icon = keyof typeof ICONS
+type Segment = { name: string; tokens: number; color: string }
 
-    const isOpen = (id: string) => isOpenIn(folded, id)
-    const toggle = (id: string, onOpen?: () => Promise<void>) => async () => {
-      const after = await update($, folds, before => ({ ...before, [id]: !isOpenIn(before, id) }))
-      if (after[id] === true && onOpen !== undefined) await onOpen()
-    }
-    const header = (id: string, title: string, onOpen?: () => Promise<void>) => (
-      <Button key={`fold:${id}`} plain onPress={toggle(id, onOpen)}>
-        {isOpen(id) ? '▾' : '▸'} {title}
-      </Button>
-    )
-    const helperRow = (helper: Helper) => (
-      <Text>
-        {'  '}
-        {helper.description} <Text dimColor>· {running(helper.minutes)}</Text>
-      </Text>
-    )
-    const stepper = (plan: Plan) => {
-      const here = STAGES.findIndex(stage => stage.name === stageOf(plan))
-      return STAGES.map((stage, index) => (
-        <Box flexDirection="column">
-          <Text>
-            {index < here ? '✓' : index === here ? '▸' : '○'} {stage.name}{' '}
-            <Text dimColor>
-              · {stage.by}
-              {index === here ? ' · here' : ''}
-            </Text>
-          </Text>
-          {stage.name === 'Build' &&
-            plan.phases.map(phase => (
-              <Text>
-                {'    '}
-                {phase.done === phase.total ? '✓' : phase.done > 0 || index === here ? '▸' : '○'} {phase.name}{' '}
-                <Text dimColor>
-                  · {phase.done} of {steps(phase.total)}
-                </Text>
-              </Text>
-            ))}
-        </Box>
-      ))
-    }
+async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): Promise<RenderElement> {
+  const ui = $.ui.resolve(e)
+  const { Box, Text, Button, Markdown } = ui
+  const Svg = isStyled && 'Svg' in ui ? ui.Svg : undefined
+  const snap = await read($, snapshot)
+  const now = await read($, turn)
+  const folded = await read($, folds)
+  const open = await read($, reading)
 
-    const plans = [...snap.plans].sort(
-      (a, b) => Number(stageOf(b) === 'Plan') - Number(stageOf(a) === 'Plan'),
-    )
-    const needYou = plans.filter(plan => stageOf(plan) === 'Plan').length
-    const working = snap.helpers.length
-    const headline = now.isRunning
-      ? 'Running on its own'
-      : working > 0
-        ? `Still working: ${working === 1 ? '1 helper' : `${working} helpers`} running`
-        : 'Your turn'
-    const isBusy = now.isRunning || working > 0
-    const others = snap.helpers.filter(helper => helper.plan === undefined)
-    const percent = snap.context?.percent
-    const firstApproved = plans.find(plan => plan.status === 'Approved')
-    const details = snap.details
-    const tokenRow = (name: string, tokens: number) => (
-      <Text>
-        {'  '}
-        {name} <Text dimColor>· {thousands(tokens)} tokens</Text>
-      </Text>
-    )
+  if (!snap.isGated) return <Text dimColor>This is not a Solid Vibes project.</Text>
 
+  if (open !== null) {
     return (
       <Box flexDirection="column">
-        {header('now', 'Now')}
+        <Button key="back" onPress={() => update($, reading, () => null)}>
+          Back
+        </Button>
+        <Text dimColor>{open.path}</Text>
+        <Markdown text={open.text} />
+      </Box>
+    )
+  }
+
+  const columns = Math.max(10, e.props.bodyColumns - 2)
+  const heading = isStyled ? ({ size: 'heading', weight: 'semibold' } as const) : ({ bold: true } as const)
+  const picture = (source: string, alt: string, height: number, width?: number) =>
+    Svg === undefined ? null : <Svg source={source} alt={alt} height={height} width={width} />
+  const icon = (name: Icon) =>
+    picture(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="${MUTED}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ICONS[name]}"/></svg>`,
+      '',
+      14,
+      14,
+    )
+  const divider = () =>
+    Svg === undefined ? (
+      <Text dimColor>{'─'.repeat(e.props.bodyColumns)}</Text>
+    ) : (
+      picture(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1" preserveAspectRatio="none"><rect width="1000" height="1" fill="${LINE}"/></svg>`,
+        '',
+        1,
+      )
+    )
+  const row = (left: RenderNode, right?: string, mark?: Icon) => (
+    <Box flexDirection="row" justifyContent="space-between" gap={1}>
+      <Box flexDirection="row" gap={1} flexShrink={1}>
+        {mark !== undefined && icon(mark)}
+        <Text>{left}</Text>
+      </Box>
+      {right !== undefined && right !== '' && <Text dimColor>{right}</Text>}
+    </Box>
+  )
+
+  const isOpen = (id: string) => isOpenIn(folded, id)
+  const toggle = (id: string, onOpen?: () => Promise<void>) => async () => {
+    const after = await update($, folds, before => ({ ...before, [id]: !isOpenIn(before, id) }))
+    if (after[id] === true && onOpen !== undefined) await onOpen()
+  }
+  const fold = (id: string, title: string, count?: string, isSection = true, onOpen?: () => Promise<void>) => (
+    <Box flexDirection="row" justifyContent="space-between" gap={1}>
+      <Button key={`fold:${id}`} plain onPress={toggle(id, onOpen)}>
+        <Text {...(isSection ? heading : {})}>{title}</Text> <Text dimColor>{isOpen(id) ? '⌄' : '›'}</Text>
+      </Button>
+      {count !== undefined && <Text dimColor>{count}</Text>}
+    </Box>
+  )
+  const helperRow = (helper: Helper) => row(helper.description, running(helper.minutes), 'helper')
+  const stepper = (plan: Plan) => {
+    const here = STAGES.findIndex(stage => stage.name === stageOf(plan))
+    return STAGES.map((stage, index) => (
+      <Box flexDirection="column">
+        {row(
+          `${index < here ? '✓' : index === here ? '▸' : '○'} ${stage.name}`,
+          `${stage.by}${index === here ? ' · here' : ''}`,
+        )}
+        {stage.name === 'Build' &&
+          plan.phases.map(phase => (
+            <Box paddingLeft={2}>
+              {row(
+                `${phase.done === phase.total && phase.total > 0 ? '✓' : phase.done > 0 || index === here ? '▸' : '○'} ${phase.name}`,
+                phase.total === 0 ? undefined : `${phase.done} of ${steps(phase.total)}`,
+              )}
+            </Box>
+          ))}
+      </Box>
+    ))
+  }
+  const contextBar = (segments: Segment[], window: number) => {
+    if (Svg !== undefined) {
+      let x = 0
+      const rects = segments.map(segment => {
+        const width = (segment.tokens / window) * 1000
+        const rect = `<rect x="${x.toFixed(1)}" width="${width.toFixed(1)}" height="6" fill="${segment.color}"/>`
+        x += width
+        return rect
+      })
+      return picture(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="6" preserveAspectRatio="none"><rect width="1000" height="6" fill="${LINE}"/>${rects.join('')}</svg>`,
+        segments.map(segment => `${segment.name} ${percentOf(segment.tokens, window)}`).join(', '),
+        6,
+      )
+    }
+    let used = 0
+    const parts = segments.map(segment => {
+      const cells = Math.min(columns - used, Math.round((segment.tokens / window) * columns))
+      used += cells
+      return <Text color={segment.color}>{'━'.repeat(cells)}</Text>
+    })
+    return (
+      <Text>
+        {parts}
+        <Text dimColor>{'━'.repeat(columns - used)}</Text>
+      </Text>
+    )
+  }
+
+  const plans = [...snap.plans].sort((a, b) => Number(stageOf(b) === 'Plan') - Number(stageOf(a) === 'Plan'))
+  const needYou = plans.filter(plan => stageOf(plan) === 'Plan').length
+  const working = snap.helpers.length
+  const headline = now.isRunning
+    ? 'Running on its own'
+    : working > 0
+      ? `Still working: ${working === 1 ? '1 helper' : `${working} helpers`} running`
+      : 'Your turn'
+  const isBusy = now.isRunning || working > 0
+  const others = snap.helpers.filter(helper => helper.plan === undefined)
+  const percent = snap.context?.percent
+  const firstApproved = plans.find(plan => plan.status === 'Approved')
+  const details = snap.details
+  const window = snap.context?.window ?? 0
+  const segments: Segment[] = (
+    details !== undefined && details.categories.length > 0
+      ? details.categories
+      : [{ name: 'Used', tokens: snap.context?.tokens ?? 0 }]
+  ).map((one, index) => ({ ...one, color: SEGMENTS[index % SEGMENTS.length]! }))
+  const legend = (name: string, tokens: number, color: string) =>
+    row(
+      <Text>
+        <Text color={color}>■</Text> {name}
+      </Text>,
+      `${thousands(tokens)} tokens · ${percentOf(tokens, window)}`,
+    )
+
+  return (
+    <Box flexDirection="column" gap={1}>
+      <Box flexDirection="column">
+        {fold('now', 'Now')}
         {isOpen('now') && (
           <Box flexDirection="column" paddingLeft={2}>
-            <Text bold>{headline}</Text>
+            <Text bold color={isBusy ? TONE.running : TONE.yourTurn}>
+              ● {headline}
+            </Text>
             {!isBusy && now.lastAsk !== '' && <Text dimColor>{now.lastAsk}</Text>}
-            {plans.length > 1 && (
-              <Text>
-                {plans.length} open · {needYou} {needYou === 1 ? 'needs' : 'need'} you
-              </Text>
-            )}
-            {plans.map(plan => (
-              <Text>
-                {plan.title} <Text dimColor>· {stageLine(plan)}</Text>
-              </Text>
-            ))}
+            {plans.length > 1 && row(`${plans.length} open`, `${needYou} ${needYou === 1 ? 'needs' : 'need'} you`)}
+            {plans.map(plan => row(plan.title, stageLine(plan)))}
             {isBusy && plans.length === 1 && <Text>{nextTurnLine(plans[0]!)}</Text>}
           </Box>
         )}
+      </Box>
+      {divider()}
 
-        {header('journey', plans.length > 1 ? 'Open work' : 'Journey')}
+      <Box flexDirection="column">
+        {fold('journey', plans.length > 1 ? 'Open work' : 'Journey', plans.length > 1 ? String(plans.length) : undefined)}
         {isOpen('journey') && (
           <Box flexDirection="column" paddingLeft={2}>
             {plans.length === 0 && <Text>Working without a plan</Text>}
@@ -350,7 +430,7 @@ export const register: Register = on => {
             {plans.length > 1 &&
               plans.map(plan => (
                 <Box flexDirection="column">
-                  {header(`plan:${plan.path}`, `${plan.title} · ${stageOf(plan)}${stepCount(plan)}`)}
+                  {fold(`plan:${plan.path}`, plan.title, `${stageOf(plan)}${stepCount(plan)}`, false)}
                   {snap.helpers.filter(helper => helper.plan === plan.path).map(helperRow)}
                   {isOpen(`plan:${plan.path}`) && (
                     <Box flexDirection="column" paddingLeft={2}>
@@ -359,56 +439,60 @@ export const register: Register = on => {
                   )}
                 </Box>
               ))}
-            {others.length > 0 && <Text>{plans.length === 0 ? 'Helpers' : 'Other work'}</Text>}
+            {others.length > 0 && <Text dimColor>{plans.length === 0 ? 'Helpers' : 'Other work'}</Text>}
             {others.map(helperRow)}
-            {plans.length === 0 && now.recent.length > 0 && <Text>Changed this chat</Text>}
-            {plans.length === 0 &&
-              [...now.recent].reverse().map(file => (
-                <Text dimColor>
-                  {'  '}
-                  {file}
-                </Text>
-              ))}
+            {plans.length === 0 && now.recent.length > 0 && <Text dimColor>Changed this chat</Text>}
+            {plans.length === 0 && [...now.recent].reverse().map(file => row(file, undefined, 'file'))}
           </Box>
         )}
+      </Box>
 
-        {snap.saved !== undefined && header('saved', 'Saved to the project')}
-        {snap.saved !== undefined && isOpen('saved') && (
-          <Box flexDirection="column" paddingLeft={2}>
-            {snap.saved.length === 0 && <Text dimColor>Nothing new saved yet.</Text>}
-            {snap.saved.map(row => (
-              <Text>
-                {row.kind} · {baseName(row.path)} <Text dimColor>· {row.why}</Text>
-              </Text>
-            ))}
-          </Box>
-        )}
+      {snap.saved !== undefined && divider()}
+      {snap.saved !== undefined && (
+        <Box flexDirection="column">
+          {fold('saved', 'Saved to the project', String(snap.saved.length))}
+          {isOpen('saved') && (
+            <Box flexDirection="column" paddingLeft={2}>
+              {snap.saved.length === 0 && <Text dimColor>Nothing new saved yet.</Text>}
+              {snap.saved.map(saved => row(baseName(saved.path), `${saved.kind} · ${saved.why}`, 'saved'))}
+            </Box>
+          )}
+        </Box>
+      )}
+      {divider()}
 
-        {header('files', 'Files')}
+      <Box flexDirection="column">
+        {fold('files', 'Files', String(snap.files.length))}
         {isOpen('files') && (
           <Box flexDirection="column" paddingLeft={2}>
             {snap.files.length === 0 && <Text dimColor>No plan, handover or intent yet.</Text>}
             {snap.files.map(path => (
-              <Button
-                key={`file:${path}`}
-                plain
-                onPress={async () => {
-                  const root = await rootOf($)
-                  const text = (await readText($, `${root}/${path}`)) ?? 'This file could not be read.'
-                  const cut =
-                    text.length > READER_CAP
-                      ? `${text.slice(0, READER_CAP)}\n\nCut here; the full file is in the project.`
-                      : text
-                  await update($, reading, () => ({ path, text: cut }))
-                }}
-              >
-                {path}
-              </Button>
+              <Box flexDirection="row" gap={1}>
+                {icon('file')}
+                <Button
+                  key={`file:${path}`}
+                  plain
+                  onPress={async () => {
+                    const root = await rootOf($)
+                    const text = (await readText($, `${root}/${path}`)) ?? 'This file could not be read.'
+                    const cut =
+                      text.length > READER_CAP
+                        ? `${text.slice(0, READER_CAP)}\n\nCut here; the full file is in the project.`
+                        : text
+                    await update($, reading, () => ({ path, text: cut }))
+                  }}
+                >
+                  {path}
+                </Button>
+              </Box>
             ))}
           </Box>
         )}
+      </Box>
+      {divider()}
 
-        {header('session', percent === undefined ? 'Session' : `Session · ${percent}% context`, () =>
+      <Box flexDirection="column">
+        {fold('session', 'Session', percent === undefined ? undefined : `${percent}% context`, true, () =>
           refresh($, true),
         )}
         {isOpen('session') && (
@@ -416,42 +500,44 @@ export const register: Register = on => {
             {snap.context === undefined || percent === undefined ? (
               <Text dimColor>No context reading yet.</Text>
             ) : (
-              <Text>
-                {percent}% of the context used{' '}
-                <Text dimColor>
-                  · {thousands(snap.context.tokens ?? 0)} of {thousands(snap.context.window)} tokens
-                </Text>
-              </Text>
+              <Box flexDirection="column">
+                {row(
+                  `${percent}% of the context used`,
+                  `${thousands(snap.context.tokens ?? 0)} of ${thousands(snap.context.window)} tokens`,
+                )}
+                {contextBar(segments, window)}
+                {details !== undefined && details.categories.length > 0 && segments.map(one => legend(one.name, one.tokens, one.color))}
+                {details?.free !== undefined && legend('Free space', details.free, MUTED)}
+              </Box>
             )}
             {percent !== undefined && percent >= 80 && (
-              <Text>
+              <Text color={TONE.yourTurn}>
                 Time for a fresh start.{' '}
                 {firstApproved === undefined
                   ? 'Type /clear. The handover keeps your place.'
                   : `Type /clear, then paste: go ${firstApproved.path}`}
               </Text>
             )}
-            {details !== undefined && details.categories.map(row => tokenRow(row.name, row.tokens))}
-            {details?.free !== undefined && tokenRow('Free space', details.free)}
-            {details?.limit !== undefined && (
-              <Text>
-                Usage limit: {details.limit.percent}% of the five-hour window used
-                {details.limit.resetsAt === undefined ? '' : `, resets at ${clockTime(details.limit.resetsAt)}`}
-              </Text>
-            )}
-            {details?.costUsd !== undefined && (
-              <Text>
-                Cost so far: about ${details.costUsd.toFixed(2)} <Text dimColor>(an estimate)</Text>
-              </Text>
-            )}
-            {details !== undefined && <Text>Started {duration(details.minutes)} ago</Text>}
-            {details !== undefined && details.connectors.length > 0 && <Text>Connectors</Text>}
-            {details?.connectors.map(row => tokenRow(row.name, row.tokens))}
+            {details?.limit !== undefined &&
+              row(
+                'Usage limit',
+                `${details.limit.percent}% of five hours${details.limit.resetsAt === undefined ? '' : ` · resets ${clockTime(details.limit.resetsAt)}`}`,
+                'limit',
+              )}
+            {details?.costUsd !== undefined &&
+              row('Cost so far', `about $${details.costUsd.toFixed(2)} (an estimate)`, 'cost')}
+            {details !== undefined && row('Started', `${duration(details.minutes)} ago`, 'clock')}
+            {details !== undefined && details.connectors.length > 0 && <Text dimColor>Connectors</Text>}
+            {details?.connectors.map(one => row(one.name, `${thousands(one.tokens)} tokens`, 'plug'))}
           </Box>
         )}
       </Box>
-    )
-  })
+    </Box>
+  )
+}
+
+function percentOf(tokens: number, window: number): string {
+  return window > 0 ? `${Math.round((tokens / window) * 100)}%` : ''
 }
 
 function isOpenIn(folded: Record<string, boolean>, id: string): boolean {
