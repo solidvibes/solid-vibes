@@ -119,6 +119,7 @@ function detailsOf(usage: SessionUsage, now: number): Details {
   const breakdown = usage.context.breakdown
   const connectors = new Map<string, number>()
   for (const tool of breakdown?.mcpTools ?? []) {
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tool.serverName)) continue
     connectors.set(tool.serverName, (connectors.get(tool.serverName) ?? 0) + tool.tokens)
   }
   const limit = usage.rateLimits.find(one => one.kind === 'five_hour')
@@ -243,7 +244,9 @@ export const register: Register = on => {
 
 const TONE = { running: 'success', yourTurn: 'warning', stuck: 'error' } as const
 const MUTED = '#8a8a8a'
-const LINE = 'rgba(128,128,128,0.35)'
+const LINE = '#808080'
+const DONE = '#2fa66a'
+const WARN = '#d08a1f'
 const SEGMENTS = ['#4f7ce8', '#2fa66a', '#d08a1f', '#a66ee0', '#d0567a', '#3aa6b8', '#9a8f3a']
 const ICONS = {
   file: 'M14 3H6v18h12V7zM14 3v4h4',
@@ -253,9 +256,13 @@ const ICONS = {
   limit: 'M4 18a8 8 0 1 1 16 0M12 18l4-6',
   cost: 'M3 7h18v10H3zM12 10v4',
   plug: 'M9 3v5M15 3v5M7 8h10v3a5 5 0 0 1-10 0zM12 16v5',
+  now: 'M3 12h4l3-8 4 16 3-8h4',
+  journey: 'M6 3v18M6 4h11l-2 4 2 4H6',
+  session: 'M4 18a8 8 0 1 1 16 0M12 18l4-6',
 } as const
 
 type Icon = keyof typeof ICONS
+const SECTION_ICON: Record<string, Icon> = { now: 'now', journey: 'journey', saved: 'saved', files: 'file', session: 'session' }
 type Segment = { name: string; tokens: number; color: string }
 
 async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): Promise<RenderElement> {
@@ -282,13 +289,13 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
   }
 
   const columns = Math.max(10, e.props.bodyColumns - 2)
-  const heading = isStyled ? ({ size: 'heading', weight: 'semibold' } as const) : ({ bold: true } as const)
+  const heading = isStyled ? ({ size: 'heading', weight: 'semibold', bold: true } as const) : ({ bold: true } as const)
   const picture = (source: string, alt: string, height: number, width?: number) =>
     Svg === undefined ? null : <Svg source={source} alt={alt} height={height} width={width} />
   const icon = (name: Icon) =>
     picture(
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="${MUTED}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ICONS[name]}"/></svg>`,
-      '',
+      name,
       14,
       14,
     )
@@ -297,18 +304,26 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       <Text dimColor>{'─'.repeat(e.props.bodyColumns)}</Text>
     ) : (
       picture(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1" preserveAspectRatio="none"><rect width="1000" height="1" fill="${LINE}"/></svg>`,
-        '',
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1" preserveAspectRatio="none"><rect width="1000" height="1" fill="${LINE}" fill-opacity="0.45"/></svg>`,
+        'divider',
         1,
       )
     )
   const row = (left: RenderNode, right?: string, mark?: Icon) => (
-    <Box flexDirection="row" justifyContent="space-between" gap={1}>
-      <Box flexDirection="row" gap={1} flexShrink={1}>
+    <Box flexDirection="row" justifyContent="space-between" gap={2}>
+      <Box flexDirection="row" gap={1} flexShrink={1} flexGrow={1}>
         {mark !== undefined && icon(mark)}
-        <Text>{left}</Text>
+        <Text wrap="truncate-end">
+          {left}
+        </Text>
       </Box>
-      {right !== undefined && right !== '' && <Text dimColor>{right}</Text>}
+      {right !== undefined && right !== '' && (
+        <Box flexShrink={0}>
+          <Text dimColor wrap="truncate-end">
+            {right}
+          </Text>
+        </Box>
+      )}
     </Box>
   )
 
@@ -319,27 +334,85 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
   }
   const fold = (id: string, title: string, count?: string, isSection = true, onOpen?: () => Promise<void>) => (
     <Box flexDirection="row" justifyContent="space-between" gap={1}>
-      <Button key={`fold:${id}`} plain onPress={toggle(id, onOpen)}>
-        <Text {...(isSection ? heading : {})}>{title}</Text> <Text dimColor>{isOpen(id) ? '⌄' : '›'}</Text>
-      </Button>
+      <Box flexDirection="row" gap={1} flexShrink={1}>
+        {isSection && SECTION_ICON[id] !== undefined && icon(SECTION_ICON[id])}
+        <Text {...(isSection ? heading : {})}>{title}</Text>
+        <Button key={`fold:${id}`} plain dimColor label={isOpen(id) ? '⌄' : '›'} onPress={toggle(id, onOpen)} />
+      </Box>
       {count !== undefined && <Text dimColor>{count}</Text>}
     </Box>
   )
+  const mark = (state: 'done' | 'here' | 'todo') =>
+    state === 'done' ? (
+      <Text color={TONE.running}>✓</Text>
+    ) : state === 'here' ? (
+      <Text color={TONE.yourTurn}>▸</Text>
+    ) : (
+      <Text dimColor>○</Text>
+    )
+  const planBar = (plan: Plan) => {
+    const here = STAGES.findIndex(stage => stage.name === stageOf(plan))
+    const total = plan.phases.reduce((sum, phase) => sum + phase.total, 0)
+    const built = total === 0 ? 0 : plan.phases.reduce((sum, phase) => sum + phase.done, 0) / total
+    const filled = (index: number) => (index < here ? 1 : index === here && STAGES[index]!.name === 'Build' ? built : 0)
+    const label = `Stage ${here + 1} of ${STAGES.length}: ${STAGES[here]!.name}`
+    if (Svg !== undefined) {
+      const gap = 12
+      const width = (1000 - gap * (STAGES.length - 1)) / STAGES.length
+      const parts = STAGES.map((_, index) => {
+        const x = index * (width + gap)
+        const color = index === here ? WARN : DONE
+        return `<rect x="${x.toFixed(1)}" width="${width.toFixed(1)}" height="6" rx="3" fill="${LINE}" fill-opacity="0.3"/>${
+          index === here && filled(index) === 0
+            ? `<rect x="${x.toFixed(1)}" width="${width.toFixed(1)}" height="6" rx="3" fill="${WARN}" fill-opacity="0.45"/>`
+            : `<rect x="${x.toFixed(1)}" width="${(width * filled(index)).toFixed(1)}" height="6" rx="3" fill="${color}"/>`
+        }`
+      })
+      return picture(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="6" preserveAspectRatio="none">${parts.join('')}</svg>`,
+        label,
+        6,
+      )
+    }
+    const cell = Math.max(1, Math.floor((columns - (STAGES.length - 1)) / STAGES.length))
+    return (
+      <Text>
+        {STAGES.map((_, index) => (
+          <Text {...(index < here ? { color: TONE.running } : index === here ? { color: TONE.yourTurn } : { dimColor: true })}>
+            {'━'.repeat(cell)}
+            {index < STAGES.length - 1 ? ' ' : ''}
+          </Text>
+        ))}
+      </Text>
+    )
+  }
   const helperRow = (helper: Helper) => row(helper.description, running(helper.minutes), 'helper')
   const stepper = (plan: Plan) => {
     const here = STAGES.findIndex(stage => stage.name === stageOf(plan))
     return STAGES.map((stage, index) => (
       <Box flexDirection="column">
         {row(
-          `${index < here ? '✓' : index === here ? '▸' : '○'} ${stage.name}`,
+          <Text>
+            {mark(index < here ? 'done' : index === here ? 'here' : 'todo')}{' '}
+            <Text {...(index === here ? { bold: true } : index > here ? { dimColor: true } : {})}>{stage.name}</Text>
+          </Text>,
           `${stage.by}${index === here ? ' · here' : ''}`,
         )}
         {stage.name === 'Build' &&
           plan.phases.map(phase => (
-            <Box paddingLeft={2}>
+            <Box flexDirection="column" paddingLeft={2}>
               {row(
-                `${phase.done === phase.total && phase.total > 0 ? '✓' : phase.done > 0 || index === here ? '▸' : '○'} ${phase.name}`,
-                phase.total === 0 ? undefined : `${phase.done} of ${steps(phase.total)}`,
+                <Text>
+                  {mark(
+                    index < here || (phase.done === phase.total && phase.total > 0)
+                      ? 'done'
+                      : phase.done > 0 || index === here
+                        ? 'here'
+                        : 'todo',
+                  )}{' '}
+                  {phase.name}
+                </Text>,
+                phase.total === 0 ? undefined : `${phase.done}/${phase.total}`,
               )}
             </Box>
           ))}
@@ -356,7 +429,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
         return rect
       })
       return picture(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="6" preserveAspectRatio="none"><rect width="1000" height="6" fill="${LINE}"/>${rects.join('')}</svg>`,
+        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="6" preserveAspectRatio="none"><rect width="1000" height="6" fill="${LINE}" fill-opacity="0.3"/>${rects.join('')}</svg>`,
         segments.map(segment => `${segment.name} ${percentOf(segment.tokens, window)}`).join(', '),
         6,
       )
@@ -399,7 +472,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       <Text>
         <Text color={color}>■</Text> {name}
       </Text>,
-      `${thousands(tokens)} tokens · ${percentOf(tokens, window)}`,
+      `${thousands(tokens)}   ${percentOf(tokens, window)}`,
     )
 
   return (
@@ -407,13 +480,18 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       <Box flexDirection="column">
         {fold('now', 'Now')}
         {isOpen('now') && (
-          <Box flexDirection="column" paddingLeft={2}>
+          <Box flexDirection="column">
             <Text bold color={isBusy ? TONE.running : TONE.yourTurn}>
               ● {headline}
             </Text>
             {!isBusy && now.lastAsk !== '' && <Text dimColor>{now.lastAsk}</Text>}
             {plans.length > 1 && row(`${plans.length} open`, `${needYou} ${needYou === 1 ? 'needs' : 'need'} you`)}
-            {plans.map(plan => row(plan.title, stageLine(plan)))}
+            {plans.map(plan => (
+              <Box flexDirection="column">
+                {row(plan.title, stageLine(plan))}
+                {planBar(plan)}
+              </Box>
+            ))}
             {isBusy && plans.length === 1 && <Text>{nextTurnLine(plans[0]!)}</Text>}
           </Box>
         )}
@@ -423,7 +501,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       <Box flexDirection="column">
         {fold('journey', plans.length > 1 ? 'Open work' : 'Journey', plans.length > 1 ? String(plans.length) : undefined)}
         {isOpen('journey') && (
-          <Box flexDirection="column" paddingLeft={2}>
+          <Box flexDirection="column">
             {plans.length === 0 && <Text>Working without a plan</Text>}
             {plans.length === 1 && stepper(plans[0]!)}
             {plans.length === 1 && snap.helpers.filter(helper => helper.plan !== undefined).map(helperRow)}
@@ -433,7 +511,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
                   {fold(`plan:${plan.path}`, plan.title, `${stageOf(plan)}${stepCount(plan)}`, false)}
                   {snap.helpers.filter(helper => helper.plan === plan.path).map(helperRow)}
                   {isOpen(`plan:${plan.path}`) && (
-                    <Box flexDirection="column" paddingLeft={2}>
+                    <Box flexDirection="column">
                       {stepper(plan)}
                     </Box>
                   )}
@@ -452,9 +530,20 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
         <Box flexDirection="column">
           {fold('saved', 'Saved to the project', String(snap.saved.length))}
           {isOpen('saved') && (
-            <Box flexDirection="column" paddingLeft={2}>
+            <Box flexDirection="column">
               {snap.saved.length === 0 && <Text dimColor>Nothing new saved yet.</Text>}
-              {snap.saved.map(saved => row(baseName(saved.path), `${saved.kind} · ${saved.why}`, 'saved'))}
+              <Box flexDirection="column" gap={1}>
+                {snap.saved.map(saved => (
+                  <Box flexDirection="column">
+                    {row(baseName(saved.path), saved.kind, 'saved')}
+                    <Box paddingLeft={3}>
+                      <Text dimColor size="footnote" wrap="truncate-end">
+                        {saved.why}
+                      </Text>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
             </Box>
           )}
         </Box>
@@ -464,7 +553,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
       <Box flexDirection="column">
         {fold('files', 'Files', String(snap.files.length))}
         {isOpen('files') && (
-          <Box flexDirection="column" paddingLeft={2}>
+          <Box flexDirection="column">
             {snap.files.length === 0 && <Text dimColor>No plan, handover or intent yet.</Text>}
             {snap.files.map(path => (
               <Box flexDirection="row" gap={1}>
@@ -496,15 +585,12 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
           refresh($, true),
         )}
         {isOpen('session') && (
-          <Box flexDirection="column" paddingLeft={2}>
+          <Box flexDirection="column">
             {snap.context === undefined || percent === undefined ? (
               <Text dimColor>No context reading yet.</Text>
             ) : (
               <Box flexDirection="column">
-                {row(
-                  `${percent}% of the context used`,
-                  `${thousands(snap.context.tokens ?? 0)} of ${thousands(snap.context.window)} tokens`,
-                )}
+                {row(`${percent}% used`, `${thousands(snap.context.tokens ?? 0)} / ${thousands(snap.context.window)}`)}
                 {contextBar(segments, window)}
                 {details !== undefined && details.categories.length > 0 && segments.map(one => legend(one.name, one.tokens, one.color))}
                 {details?.free !== undefined && legend('Free space', details.free, MUTED)}
@@ -528,7 +614,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
               row('Cost so far', `about $${details.costUsd.toFixed(2)} (an estimate)`, 'cost')}
             {details !== undefined && row('Started', `${duration(details.minutes)} ago`, 'clock')}
             {details !== undefined && details.connectors.length > 0 && <Text dimColor>Connectors</Text>}
-            {details?.connectors.map(one => row(one.name, `${thousands(one.tokens)} tokens`, 'plug'))}
+            {details?.connectors.map(one => row(one.name, thousands(one.tokens), 'plug'))}
           </Box>
         )}
       </Box>
@@ -537,7 +623,7 @@ async function drawPane($: Engine, e: RenderInput<'Pane'>, isStyled: boolean): P
 }
 
 function percentOf(tokens: number, window: number): string {
-  return window > 0 ? `${Math.round((tokens / window) * 100)}%` : ''
+  return window > 0 ? `${((tokens / window) * 100).toFixed(1)}%` : ''
 }
 
 function isOpenIn(folded: Record<string, boolean>, id: string): boolean {
@@ -545,7 +631,13 @@ function isOpenIn(folded: Record<string, boolean>, id: string): boolean {
 }
 
 function thousands(tokens: number): string {
-  return tokens >= 1000 ? `${Math.round(tokens / 1000)}k` : String(tokens)
+  if (tokens >= 1_000_000) return `${trim(tokens / 1_000_000)}M`
+  if (tokens >= 1000) return `${trim(tokens / 1000)}K`
+  return String(tokens)
+}
+
+function trim(value: number): string {
+  return value >= 100 ? String(Math.round(value)) : value.toFixed(1).replace(/\.0$/, '')
 }
 
 function duration(minutes: number): string {
