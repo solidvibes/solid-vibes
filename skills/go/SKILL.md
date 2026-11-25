@@ -59,6 +59,7 @@ Read the project's Factory contract: the `## Factory` section of `AGENTS.md` in 
 - Group plans into **lanes**. Plans that share files, an entry type, a schema or a layer chain go in one lane, in dependency order. Independent lanes run in parallel.
 - Per lane: one background sub-agent in its own worktree (in Claude Code, `isolation: "worktree"`; elsewhere `solidvibes worktrees` and `git worktree add`), told to run this skill's **Series** mode on its plans in order, treat the plans as approved, pass the user's earlier answers (recorded as **mine** decisions in the plans' `## Decisions`), and follow the contract's `run` rules (local stacks, simulators, never production, never a physical device).
 - **One machine.** Lanes share the user's computer. At most two lanes build or test at once; device suites (simulator, emulator, desktop app) run one at a time across all lanes. Tell every lane: cap test concurrency, one scratch backend per lane and stop it after each run, stop build daemons after builds, kill processes it started, shut down devices it booted when done.
+- You and every lane may read another worktree; changing it (checkout, reset, a formatter, edits) needs the user's yes first, since it may hold uncommitted work.
 - A lane that depends on another lane's unmerged work waits, or stacks on its branch. Say which, and why.
 - **Phases you run yourself still get reviewed.** When you drive a plan phase by phase instead of handing a lane Series mode, follow the same flow: coder runs grouped as above, risk reviews where they apply, then the series review and the verify. Never skip them because the coder said its checks pass.
 
@@ -125,6 +126,9 @@ After the verify, when the series changed a screen or a flow, show the user the 
 
 - **Every PR passes the contract's `checks.full`.** If the contract's `harness` is not `none`, every lane also runs `<harness command> all`; failures are fixed on the PR branch and re-run until green. No harness → say plainly what stayed manual.
 - **Push and open one draft PR per series** (never one per plan): `git push -u origin feat/<slug>`; write the PR body to a temp file (avoids shell-quoting trouble) with each plan's `## TL;DR` under a per-plan heading, a one-line review summary (BLOCKERs found and fixed across the series), the verification table, `## Docs drift` (the docs lens's drift list, or "none found"), `## Needs human review` if the series touches a contract `risk` area (name it), `## Unresolved findings`, and owner follow-ups; then `gh pr create --draft --title "<feature title>" --body-file <file>`. If a PR for the branch already exists, `gh pr edit <n> --body-file <file>` instead of a second. **No remote or no `gh`**: skip the push and the PR, say so plainly, and report the branch and its commits.
+- **Green means mergeable too.** CI doesn't run on a PR with conflicts, so check `gh pr view --json mergeable,mergeStateStatus` before calling it green.
+- **Retry only what failed.** A failure the diff didn't cause (a flake, a timeout) gets `gh run rerun <id> --failed`. Never push an empty commit to re-trigger CI.
+- **Quote the proof.** Actions logs expire. When a PR or issue comment cites a run as evidence, put the lines that prove it in a collapsed `<details>` block next to the link.
 - **Green → ready.** Walk the user through the change (Visual check), then `gh pr ready`.
 - **Stopped → draft.** At a big fork, a contradiction with a plan's decisions, or checks that won't go green: stop that lane at a **draft PR** (no PR only if nothing is worth keeping) whose body has `## Stopped at`, `## Needs` and `## To continue`. Other lanes keep going.
 - If `osascript` is available, notify "PR ready: <slug>"; otherwise skip.
@@ -133,6 +137,8 @@ After the verify, when the series changed a screen or a flow, show the user the 
 ## When to talk to the user
 
 Only for: a fork that is theirs and wasn't settled before, a lane that stopped, setup that only they can do and that blocks progress, or a question they asked. Otherwise stay silent; a finished agent gets at most one line. Never fabricate a sub-agent's result: if the user asks before it is in, say it is still running.
+
+A sub-agent's report is a draft. Before you quote an identifier it names (an issue, a PR, a file, a function) to the user or in a PR body, fetch it from its source; otherwise say it was reported but not checked.
 
 ## Final report
 
