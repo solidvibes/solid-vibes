@@ -67,6 +67,7 @@ For each changed file, load the contract's `rules` that apply, and `AGENTS.md`. 
 
 - Should any docs be updated (the contract's `docs`, `rules` files, `AGENTS.md`)?
 - Behavior changed and no `docs/how-it-works/` doc did → add a finding.
+- The diff adds, renames or changes an identifier (a parameter, field, flag, config key, enum value) → `git grep` it; any place still quoting the old form is a BLOCKER, fixed in the same change.
 - Did this work surface patterns that are not in any rule or in `AGENTS.md` yet?
 
 ## Step 6 — Over-engineering check

@@ -6,6 +6,7 @@ One plain sentence per entry.
 ## Unreleased
 
 - In a Solid Vibes project, a Progress pane beside the chat shows where the work stands, whether it needs you, how many steps are left before it does, and what was saved to the project.
+- Agents check what a sub-agent reports before quoting it, leave other worktrees alone, read a write back before retrying it, and read CI the right way: mergeable first, rerun only failed jobs, quote the proof.
 - Skills now ask before turning a correction into a rule, keep things lean and simple (essential complexity in one place, parts reused by the third time), check work where the owner will look, and say what an approval covers.
 - When a project lists the sv-pro `linear` pack, hello shows its open Linear issues, bye updates the ones the session touched, a plan can link to a Linear project, and release closes what shipped.
 - Installing sv-pro fetches it over HTTPS, so it works without an SSH key set up for GitHub.
