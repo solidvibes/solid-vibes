@@ -50,6 +50,7 @@ declare module 'claude-code' {
       turn: Shaped<Turn>
       folds: Shaped<Record<string, boolean>>
       reading: Shaped<Reading | null>
+      opened: Shaped<string | null>
     }
   }
 }

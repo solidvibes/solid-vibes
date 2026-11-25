@@ -244,10 +244,34 @@ test('several plans list the one that needs you first', async ($, on) => {
   await start($)
 
   await everySurface($, async (_, text) => {
-    expect(text).toContain('2 open\n1 needs you')
+    expect(text).toContain('Approve the plan\nDark mode')
+    expect(text).toContain('1 other plan · 1 needs you')
     expect(text).toContain('Open work')
     expect(text.indexOf('Dark mode')).toBeLessThan(text.indexOf('Progress pane'))
   })
+})
+
+test('pressing a plan opens its stages, and Back returns to the list', async ($, on) => {
+  project(on, {
+    files: {
+      'AGENTS.md': CONTRACT,
+      'docs/plans/2026-11-01-a-build.md': BUILDING,
+      'docs/plans/2026-11-02-dark-mode.md': DRAFT,
+    },
+  })
+  await start($)
+
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount({ ...PANE, surface })
+    await ui.press({ key: 'plan:docs/plans/2026-11-01-a-build.md' })
+    const text = await words(ui)
+    expect(text).toContain('Phase 2 — What was kept')
+    expect(text).toContain('Read the plan')
+    expect(text).not.toContain('Open work')
+    await ui.press({ key: 'close-plan' })
+    expect(await words(ui)).toContain('Open work')
+    await ui.unmount()
+  }
 })
 
 test('with no plan it works without one and lists files changed this chat', async ($, on) => {
@@ -345,7 +369,7 @@ test('a file opens in the reader and Back returns', async ($, on) => {
     await ui.press({ key: 'fold:files' })
     await ui.press({ key: 'fold:session' })
     const text = await words(ui)
-    expect(text).toContain('Session\n85% context')
+    expect(text).toContain('Session\n85%')
     expect(text).toContain('Type /clear. The handover keeps your place.')
     await ui.press({ key: 'fold:session' })
     await ui.unmount()
@@ -434,13 +458,13 @@ test('session details show what the reading has, and leave out what it lacks', a
     await ui.press({ key: 'fold:session' })
     const text = await words(ui)
     for (const line of [
-      'Session\n30% context',
+      'Session\n30%',
       '■ Messages',
       '50K   25.0%',
       '■ Free space',
       '140K   70.0%',
       'Usage limit\n23% of five hours',
-      'Cost so far\nabout $1.23 (an estimate)',
+      'Cost so far\nabout $1.23',
       'Started\n1 h 5 min ago',
       'docs\n3K',
     ]) {
