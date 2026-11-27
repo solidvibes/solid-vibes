@@ -65,6 +65,7 @@ has "$E/docs/stack.md" "blank 0.1.0"
 has "$E/docs/CONVENTIONS.md" "solidvibes:generated from sv"
 head -n 1 "$E/.solidvibes/.gitignore" | grep -q '^# solidvibes:generated from sv' || fail ".solidvibes/.gitignore header"
 [ "$(count "$E/.solidvibes/.gitignore" handover.md)" = 1 ] && [ "$(count "$E/.solidvibes/.gitignore" hello.state)" = 1 ] \
+  && [ "$(count "$E/.solidvibes/.gitignore" done/)" = 1 ] \
   || fail ".solidvibes/.gitignore lines"
 jq -e '[.generated[].path] | index(".solidvibes/.gitignore") != null' "$E/.solidvibes/manifest.json" >/dev/null \
   || fail ".solidvibes/.gitignore not in the manifest"

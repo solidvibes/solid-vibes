@@ -5,7 +5,8 @@
 #   Silent and writes nothing unless .solidvibes/manifest.json exists and .solidvibes/.gitignore
 #   lists handover.md, so the file is never committed. Run by the PreCompact hook.
 #   Then trims `## Done` to its first 5 entries (newest first); older ones move to the top of
-#   .solidvibes/done.md, which no hook prints. Only when .solidvibes/.gitignore lists done.md.
+#   .solidvibes/done/YYYY-MM.md (the entry's month, else this one), which no hook prints, and an
+#   older .solidvibes/done.md is split the same way once. Only when .solidvibes/.gitignore lists done/.
 
 # At most 30 lines of a git command's output, so the SessionStart hook stays small.
 handover_git() { # <top> <git args…>
@@ -86,37 +87,58 @@ handover_snapshot() { # <top>
 HANDOVER_DONE_KEEP=5
 
 handover_trim() { # <top>
-  local top="$1" file="$1/.solidvibes/handover.md" log="$1/.solidvibes/done.md" tmp moved
-  [ -f "$top/.solidvibes/manifest.json" ] || return 0
-  grep -qxF done.md "$top/.solidvibes/.gitignore" 2>/dev/null || return 0
-  [ -f "$file" ] && [ ! -L "$file" ] && [ ! -L "$log" ] || return 0
-  tmp="$top/.solidvibes/.handover.tmp.$$"
-  moved="$top/.solidvibes/.done.tmp.$$"
+  local top="$1" sv="$1/.solidvibes" file="$1/.solidvibes/handover.md" old="$1/.solidvibes/done.md"
+  local dir="$1/.solidvibes/done" tmp moved split f m
+  [ -f "$sv/manifest.json" ] || return 0
+  grep -qxF done/ "$sv/.gitignore" 2>/dev/null || return 0
+  [ ! -L "$file" ] && [ ! -L "$old" ] && [ ! -L "$dir" ] || return 0
+  tmp="$sv/.handover.tmp.$$"
+  moved="$sv/.done.tmp.$$"
+  : > "$moved"
 
   # Entries are `- ` lines with their continuation lines; blank lines between moved ones are dropped.
-  awk -v keep="$HANDOVER_DONE_KEEP" -v moved="$moved" '
-    /^```/ { fence = !fence }
-    { line = $0; sub(/\r$/, "", line) }
-    !fence && line ~ /^## / { if (moving) print ""; done = (line == "## Done"); moving = 0 }
-    done && !fence && line ~ /^- / && ++n > keep { moving = 1 }
-    moving { if (line != "") print > moved; next }
-    { print }' "$file" > "$tmp"
+  if [ -f "$file" ]; then
+    awk -v keep="$HANDOVER_DONE_KEEP" -v moved="$moved" '
+      /^```/ { fence = !fence }
+      { line = $0; sub(/\r$/, "", line) }
+      !fence && line ~ /^## / { if (moving) print ""; done = (line == "## Done"); moving = 0 }
+      done && !fence && line ~ /^- / && ++n > keep { moving = 1 }
+      moving { if (line != "") print > moved; next }
+      { print }' "$file" > "$tmp"
+  fi
+  # A done.md from before the monthly archive is older than anything moved now.
+  if [ -f "$old" ]; then awk 'body { print; next } /^- / { body = 1; print }' "$old" >> "$moved"; fi
 
   if [ ! -s "$moved" ]; then
     rm -f "$tmp" "$moved"
     return 0
   fi
-  {
-    echo "# Done"
-    echo
-    echo "_Older Done lines from handover.md, newest first. Moved by \`solidvibes handover\`; no hook prints this file._"
-    echo
-    cat "$moved"
-    if [ -f "$log" ]; then awk 'body { print; next } /^- / { body = 1; print }' "$log"; fi
-  } > "$moved.log"
-  mv "$moved.log" "$log"
-  mv "$tmp" "$file"
-  rm -f "$moved"
+
+  # One file per month, by the first YYYY-MM in an entry's first line, else this month.
+  split="$sv/.done.split.$$"
+  mkdir "$split"
+  awk -v out="$split" -v now="$(date +%Y-%m)" '
+    BEGIN { m = now }
+    /^- / { m = now; if (match($0, /(19|20)[0-9][0-9]-(0[1-9]|1[0-2])/)) m = substr($0, RSTART, 7) }
+    { if (out "/" m != last) { if (last != "") close(last); last = out "/" m } print >> last }' "$moved"
+
+  mkdir -p "$dir"
+  for f in "$split"/*; do
+    m="${f##*/}"
+    {
+      echo "# Done $m"
+      echo
+      echo "_Done lines moved out of handover.md, newest first, by \`solidvibes handover\`; no hook prints this file._"
+      echo
+      cat "$f"
+      if [ -f "$dir/$m.md" ]; then awk 'body { print; next } /^- / { body = 1; print }' "$dir/$m.md"; fi
+    } > "$f.md"
+    mv "$f.md" "$dir/$m.md"
+    rm -f "$f"
+  done
+  rmdir "$split"
+  if [ -f "$tmp" ]; then mv "$tmp" "$file"; fi
+  rm -f "$old" "$moved"
 }
 
 cli_handover() {

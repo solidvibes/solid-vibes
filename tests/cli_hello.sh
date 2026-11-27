@@ -66,7 +66,16 @@ printf '%s\n' "$out" | grep -q "Say hello" && fail "reminder only on startup: $o
 printf '# Handover\n\n## Done\n- 1\n- 2\n- 3\n- 4\n- 5\n- 6\n' > "$P/.solidvibes/handover.md"
 out="$(echo '{"source":"startup"}' | "$SV" hello --hook "$P")"
 printf '%s\n' "$out" | grep -qx -- "- 6" && fail "hook should trim Done before printing: $out"
-grep -qx -- "- 6" "$P/.solidvibes/done.md" || fail "hook should move old Done lines to done.md"
+grep -qx -- "- 6" "$P/.solidvibes/done/$(date +%Y-%m).md" || fail "hook should move old Done lines to done/"
+printf '%s\n' "$out" | grep -q "^Handover is\|^The Done trim is off" && fail "no warning for a small handover: $out"
+
+{ printf '# Handover\n\n## Open\n'; for i in $(seq 1 200); do echo "- an open item that was never pruned"; done; } > "$P/.solidvibes/handover.md"
+out="$(echo '{"source":"compact"}' | "$SV" hello --hook "$P")"
+printf '%s\n' "$out" | grep -q "^Handover is 8 KB, over 6 KB" || fail "size warning: $out"
+
+sed -i.bak '/^done\/$/d' "$P/.solidvibes/.gitignore" && rm "$P/.solidvibes/.gitignore.bak"
+out="$(echo '{"source":"compact"}' | "$SV" hello --hook "$P")"
+printf '%s\n' "$out" | grep -q "^The Done trim is off: .*Run solidvibes init" || fail "gitignore warning: $out"
 
 N="$T/plain"
 mkdir "$N" && git init -q "$N"
