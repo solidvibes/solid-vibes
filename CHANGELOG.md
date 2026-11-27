@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- The handover's git snapshot holds only the branch, up to 15 changed files and the last 5 commits, so each session starts smaller.
 - Finished work is kept in `docs/log/`, one file per month, committed with each piece of work so every device sees it.
 - The handover keeps its five newest Done lines, so each session starts smaller; older ones move to one file per month in `.solidvibes/done/`.
 - `hello` and `bye` keep Open and Next to what is in progress, and the session start warns when the handover is too big or its Done trim is off.

@@ -37,10 +37,10 @@ Only what is in progress, since the SessionStart hook prints all of it every tim
 
 | Hook | Runs | Does |
 |---|---|---|
-| PreCompact | `solidvibes handover --snapshot` | Replaces the `## Snapshot` section of the handover with the branch, `git status --short`, `git diff --stat`, the last 5 commits and `git worktree list`, at most 30 lines each. Everything else stays byte for byte, except the Done trim below. Writes nothing unless `.solidvibes/.gitignore` lists `handover.md` |
+| PreCompact | `solidvibes handover --snapshot` | Replaces the `## Snapshot` section of the handover with the branch, `git status --short` (at most 15 lines) and the last 5 commits. Everything else stays byte for byte, except the Done trim below. Writes nothing unless `.solidvibes/.gitignore` lists `handover.md` |
 | SessionStart (`startup`, `resume`, `clear`, `compact`) | `solidvibes hello --hook` | Trims Done, then prints the handover and the status lines. Adds one line when the handover is over 6 KB, and one when `.solidvibes/.gitignore` lacks `done/` (the trim is off; run `solidvibes init`). On `startup` adds "Say hello for the full check." |
 
-Both hooks keep the first 5 entries under `## Done` (newest first) and move the rest to the top of `.solidvibes/done/YYYY-MM.md`, newest first. The month is the first `YYYY-MM` in the entry's first line, else the current one. No hook prints these files, and each month stays its own file. A `.solidvibes/done.md` from an older version is split the same way once, then removed. Only when `.solidvibes/.gitignore` lists `done/`; an older project gets that line, and the hook's warning stops, when `init` runs again.
+Both hooks keep the first 5 entries under `## Done` (newest first) and move the rest to the top of `.solidvibes/done/YYYY-MM.md`, newest first. The month is that of the first full date (`YYYY-MM-DD`, not in the future) in the entry's first line, else the current one. No hook prints these files, and each month stays its own file. A `.solidvibes/done.md` from an older version is split the same way once, then removed. Only when `.solidvibes/.gitignore` lists `done/`; an older project gets that line, and the hook's warning stops, when `init` runs again.
 
 ## Work log
 
