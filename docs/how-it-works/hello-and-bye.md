@@ -42,6 +42,10 @@ Only what is in progress, since the SessionStart hook prints all of it every tim
 
 Both hooks keep the first 5 entries under `## Done` (newest first) and move the rest to the top of `.solidvibes/done/YYYY-MM.md`, newest first. The month is the first `YYYY-MM` in the entry's first line, else the current one. No hook prints these files, and each month stays its own file. A `.solidvibes/done.md` from an older version is split the same way once, then removed. Only when `.solidvibes/.gitignore` lists `done/`; an older project gets that line, and the hook's warning stops, when `init` runs again.
 
+## Work log
+
+`solidvibes handover --log` moves every entry of `.solidvibes/done/YYYY-MM.md` to the top of `docs/log/YYYY-MM.md` and removes the local file. `docs/log/` is committed, so the history reaches every device and every clone. `go` (at completion) and `brief` (at hand-off) run it, so the lines land in the same commit and pull request as the work. The hooks never write it: a hook writing a tracked file would leave every worktree dirty and two machines in conflict.
+
 Codex and other agents have no hooks: the user types hello and bye.
 
 ## Local files
