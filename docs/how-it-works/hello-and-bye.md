@@ -29,7 +29,7 @@ Between sessions the routing in `AGENTS.md` keeps Done, Open and Next current af
 
 ## Hooks (Claude Code)
 
-`hooks/hooks.json` in the plugin. Both act only in a project with `.solidvibes/manifest.json` and always exit 0.
+`hooks/hooks.json` in the plugin. Each hook runs a script in `hooks/` (`pre-compact.sh`, `session-start.sh`) that calls the CLI with the project from `$CLAUDE_PROJECT_DIR`, so the command line holds only the script's path. Both act only in a project with `.solidvibes/manifest.json` and always exit 0.
 
 | Hook | Runs | Does |
 |---|---|---|

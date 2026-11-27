@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- The plugin has an icon, and its README says what runs on your computer and that nothing is sent off it.
 - The Progress pane opens on one card that says whether it needs you and where that plan is, lists other plans one line each, and opens a plan's stages when you press it.
 - In a Solid Vibes project, a Progress pane beside the chat shows where the work stands, whether it needs you, how many steps are left before it does, and what was saved to the project.
 - Agents check what a sub-agent reports before quoting it, leave other worktrees alone, read a write back before retrying it, and read CI the right way: mergeable first, rerun only failed jobs, quote the proof.

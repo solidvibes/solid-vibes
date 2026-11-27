@@ -83,6 +83,15 @@ Your project keeps its memory in `docs/`: why it exists, how it works and what w
 
 In Claude Code, a Progress pane beside the chat shows where the project stands and when it needs you; type `/progress` to open it again. [How it works](docs/how-it-works/progress-pane.md).
 
+## What runs on your computer, and what it sends
+
+Nothing in this plugin sends data off your computer. Everything below acts only in a project with `.solidvibes/manifest.json`; anywhere else it does nothing.
+
+- **Hooks.** At session start `hooks/session-start.sh` runs `bin/solidvibes hello --hook`, which prints the handover and status lines into the chat. Before compaction `hooks/pre-compact.sh` runs `bin/solidvibes handover --snapshot`, which writes the git snapshot into `.solidvibes/handover.md`. Both always exit 0 and never block.
+- **Progress pane** (`hooks/progress-pane.tsx`). It reads the project's `AGENTS.md`, plans, `docs/` and `.agents/skills/`, the session's context use and the last answer, and the paths of files the AI just wrote. The only program it starts is `git` (`git log` and `git status`, read-only, limited to those project files). It hooks session start and end, each turn, each tool call (to see which file was written; it never changes or blocks the call) and adds the `/progress` command. What it reads stays in the pane.
+- **`bin/solidvibes`.** The bash CLI the skills and hooks call. It reads and writes the project; `install` links skills into `~/.agents/skills` and a helper into `~/.local/bin`.
+- **Your sign-ins.** Only `solidvibes run`, the headless mode you start yourself, touches them: its sandbox gets read access to the agent's own folder (`~/.claude` or `~/.codex`), `~/.gitconfig`, `~/.config/git` and `~/.config/gh`, so the agent, `git` and `gh` work inside it. They are never copied, logged or sent anywhere by Solid Vibes. [How it works](docs/how-it-works/headless-run.md).
+
 ## Pro
 
 Solid Vibes Pro adds ready-made rules for building Flutter apps with Supabase, and goes deeper than the free basics: layouts for every screen size, a designer's review of each screen, and security checklists per stack. It is a separate, paid plugin. Everything in this repo works without it.

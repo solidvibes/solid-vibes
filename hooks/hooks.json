@@ -4,7 +4,7 @@
     "PreCompact": [
       {
         "hooks": [
-          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/solidvibes\" handover --snapshot \"${CLAUDE_PROJECT_DIR:-.}\" >/dev/null 2>&1 || true" }
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact.sh\"" }
         ]
       }
     ],
@@ -12,7 +12,7 @@
       {
         "matcher": "startup|resume|clear|compact",
         "hooks": [
-          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/bin/solidvibes\" hello --hook \"${CLAUDE_PROJECT_DIR:-.}\" 2>/dev/null || true" }
+          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"" }
         ]
       }
     ]
