@@ -26,7 +26,7 @@ Write `.solidvibes/handover.md`, about 15 lines:
 - The next steps, in order. The first one is what the next session starts with.
 ```
 
-Replace the old Done, Open and Next. Keep the `## Snapshot` section exactly as it is: a hook writes it before the conversation is compacted. The file is local to this machine and never committed (`.solidvibes/.gitignore` lists it).
+Put this session's Done lines at the top of Done, newest first; past five, the oldest move to `.solidvibes/done.md` on their own. Replace the old Open and Next. Keep the `## Snapshot` section exactly as it is: a hook writes it before the conversation is compacted. The files are local to this machine and never committed (`.solidvibes/.gitignore` lists them).
 
 ## 2. Keep what was learned
 

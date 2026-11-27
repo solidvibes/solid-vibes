@@ -7,8 +7,8 @@
 #               .agents/skills/ vs .solidvibes/hello.state: same, changed or unchecked
 #   --full     adds `solidvibes doctor` and `solidvibes worktrees` for the toplevel
 #   --checked  stores the current docs hash in .solidvibes/hello.state (the only write)
-#   --hook     for the SessionStart hook: silent unless .solidvibes/manifest.json exists; prints the
-#              handover, the lines above and, on startup, a reminder. Refreshes an installed status
+#   --hook     for the SessionStart hook: silent unless .solidvibes/manifest.json exists; trims the
+#              handover's Done to 5 entries (see `solidvibes handover`), prints the handover, the lines above and, on startup, a reminder. Refreshes an installed status
 #              bar script (outside the project) when it differs. Always exits 0.
 
 HELLO_DOCS="AGENTS.md docs/intent.md docs/stack.md docs/decisions docs/how-it-works .agents/skills"
@@ -106,6 +106,8 @@ hello_hook() { # <top>
   source "$SOLIDVIBES_ROOT/lib/cli-statusline.sh" && statusline_refresh
   [ -t 0 ] || input="$(cat)"
   source="$(printf '%s' "$input" | tr -d '\n' | sed -n 's/.*"source"[[:space:]]*:[[:space:]]*"\([a-z]*\)".*/\1/p')"
+  # shellcheck source=/dev/null
+  source "$SOLIDVIBES_ROOT/lib/cli-handover.sh" && handover_trim "$top"
   if [ -f "$top/.solidvibes/handover.md" ]; then
     echo "Handover (.solidvibes/handover.md):"
     echo

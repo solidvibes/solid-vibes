@@ -4,6 +4,8 @@
 #   Everything else in the file stays byte for byte; a missing file is created with that section only.
 #   Silent and writes nothing unless .solidvibes/manifest.json exists and .solidvibes/.gitignore
 #   lists handover.md, so the file is never committed. Run by the PreCompact hook.
+#   Then trims `## Done` to its first 5 entries (newest first); older ones move to the top of
+#   .solidvibes/done.md, which no hook prints. Only when .solidvibes/.gitignore lists done.md.
 
 # At most 30 lines of a git command's output, so the SessionStart hook stays small.
 handover_git() { # <top> <git args…>
@@ -81,6 +83,42 @@ handover_snapshot() { # <top>
   mv "$tmp" "$file"
 }
 
+HANDOVER_DONE_KEEP=5
+
+handover_trim() { # <top>
+  local top="$1" file="$1/.solidvibes/handover.md" log="$1/.solidvibes/done.md" tmp moved
+  [ -f "$top/.solidvibes/manifest.json" ] || return 0
+  grep -qxF done.md "$top/.solidvibes/.gitignore" 2>/dev/null || return 0
+  [ -f "$file" ] && [ ! -L "$file" ] && [ ! -L "$log" ] || return 0
+  tmp="$top/.solidvibes/.handover.tmp.$$"
+  moved="$top/.solidvibes/.done.tmp.$$"
+
+  # Entries are `- ` lines with their continuation lines; blank lines between moved ones are dropped.
+  awk -v keep="$HANDOVER_DONE_KEEP" -v moved="$moved" '
+    /^```/ { fence = !fence }
+    { line = $0; sub(/\r$/, "", line) }
+    !fence && line ~ /^## / { if (moving) print ""; done = (line == "## Done"); moving = 0 }
+    done && !fence && line ~ /^- / && ++n > keep { moving = 1 }
+    moving { if (line != "") print > moved; next }
+    { print }' "$file" > "$tmp"
+
+  if [ ! -s "$moved" ]; then
+    rm -f "$tmp" "$moved"
+    return 0
+  fi
+  {
+    echo "# Done"
+    echo
+    echo "_Older Done lines from handover.md, newest first. Moved by \`solidvibes handover\`; no hook prints this file._"
+    echo
+    cat "$moved"
+    if [ -f "$log" ]; then awk 'body { print; next } /^- / { body = 1; print }' "$log"; fi
+  } > "$moved.log"
+  mv "$moved.log" "$log"
+  mv "$tmp" "$file"
+  rm -f "$moved"
+}
+
 cli_handover() {
   local snapshot=false dir="" top
   while [ $# -gt 0 ]; do
@@ -94,4 +132,5 @@ cli_handover() {
   [ "$snapshot" = true ] || { echo "usage: solidvibes handover --snapshot [dir]" >&2; return 1; }
   top="$(git -C "${dir:-.}" rev-parse --show-toplevel 2>/dev/null)" || return 0
   handover_snapshot "$top"
+  handover_trim "$top"
 }
