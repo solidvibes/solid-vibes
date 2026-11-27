@@ -63,6 +63,11 @@ printf '%s\n' "$out" | grep -qx "Say hello for the full check." || fail "hook st
 out="$(echo '{"source":"compact"}' | "$SV" hello --hook "$P")"
 printf '%s\n' "$out" | grep -q "Say hello" && fail "reminder only on startup: $out"
 
+printf '# Handover\n\n## Done\n- 1\n- 2\n- 3\n- 4\n- 5\n- 6\n' > "$P/.solidvibes/handover.md"
+out="$(echo '{"source":"startup"}' | "$SV" hello --hook "$P")"
+printf '%s\n' "$out" | grep -qx -- "- 6" && fail "hook should trim Done before printing: $out"
+grep -qx -- "- 6" "$P/.solidvibes/done.md" || fail "hook should move old Done lines to done.md"
+
 N="$T/plain"
 mkdir "$N" && git init -q "$N"
 out="$(echo '{"source":"startup"}' | "$SV" hello --hook "$N")"

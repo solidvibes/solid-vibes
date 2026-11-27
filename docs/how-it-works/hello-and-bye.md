@@ -33,11 +33,13 @@ Between sessions the routing in `AGENTS.md` keeps Done, Open and Next current af
 
 | Hook | Runs | Does |
 |---|---|---|
-| PreCompact | `solidvibes handover --snapshot` | Replaces the `## Snapshot` section of the handover with the branch, `git status --short`, `git diff --stat`, the last 5 commits and `git worktree list`, at most 30 lines each. Everything else stays byte for byte. Writes nothing unless `.solidvibes/.gitignore` lists `handover.md` |
-| SessionStart (`startup`, `resume`, `clear`, `compact`) | `solidvibes hello --hook` | Prints the handover and the status lines. On `startup` adds "Say hello for the full check." |
+| PreCompact | `solidvibes handover --snapshot` | Replaces the `## Snapshot` section of the handover with the branch, `git status --short`, `git diff --stat`, the last 5 commits and `git worktree list`, at most 30 lines each. Everything else stays byte for byte, except the Done trim below. Writes nothing unless `.solidvibes/.gitignore` lists `handover.md` |
+| SessionStart (`startup`, `resume`, `clear`, `compact`) | `solidvibes hello --hook` | Trims Done, then prints the handover and the status lines. On `startup` adds "Say hello for the full check." |
+
+Both hooks keep the first 5 entries under `## Done` (newest first) and move the rest to the top of `.solidvibes/done.md`, which no hook prints, so the handover stays small however long the project runs. Only when `.solidvibes/.gitignore` lists `done.md`; an older project gets that line when `init` runs again.
 
 Codex and other agents have no hooks: the user types hello and bye.
 
 ## Local files
 
-`.solidvibes/handover.md` and `.solidvibes/hello.state` belong to one machine and are never committed. `init` writes a generated `.solidvibes/.gitignore` listing both; it never touches the project's own `.gitignore`. `worktrees --clean` treats the two files as disposable, so a worktree that was compacted in can still be cleaned.
+`.solidvibes/handover.md`, `.solidvibes/done.md` and `.solidvibes/hello.state` belong to one machine and are never committed. `init` writes a generated `.solidvibes/.gitignore` listing them; it never touches the project's own `.gitignore`. `worktrees --clean` treats the three files as disposable, so a worktree that was compacted in can still be cleaned.

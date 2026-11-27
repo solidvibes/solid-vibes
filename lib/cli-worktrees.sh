@@ -8,7 +8,7 @@
 #   1. Not the main checkout, and not the worktree you are standing in.
 #   2. No changes, and no ignored files beyond build output
 #      (build, .dart_tool, node_modules, Pods, .gradle, .cxx) and the local
-#      .solidvibes/handover.md and .solidvibes/hello.state.
+#      .solidvibes/handover.md, done.md and hello.state.
 #   3. No live owner: a git lock whose pid runs, a nono session or a pid file
 #      (.claude/worktrees/<name>.pid). A lock with no pid at all also counts as owned.
 #   4. Idle for 24h (the worktree's index and logs/HEAD untouched).
@@ -74,7 +74,7 @@ wt_extra_ignored() {
   local -a segs
   out="$(git --no-optional-locks -C "$1" status --porcelain --untracked-files=normal --ignored=matching)" || return 1
   while IFS= read -r path; do
-    case "${path#!! }" in .solidvibes/handover.md|.solidvibes/hello.state) continue ;; esac
+    case "${path#!! }" in .solidvibes/handover.md|.solidvibes/done.md|.solidvibes/hello.state) continue ;; esac
     build=false
     IFS=/ read -ra segs <<< "${path#!! }"
     for seg in "${segs[@]}"; do
