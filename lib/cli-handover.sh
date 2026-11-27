@@ -7,6 +7,9 @@
 #   Then trims `## Done` to its first 5 entries (newest first); older ones move to the top of
 #   .solidvibes/done/YYYY-MM.md (the entry's month, else this one), which no hook prints, and an
 #   older .solidvibes/done.md is split the same way once. Only when .solidvibes/.gitignore lists done/.
+# solidvibes handover --log [dir]
+#   Moves every entry of .solidvibes/done/YYYY-MM.md to the top of the committed docs/log/YYYY-MM.md,
+#   then removes the local file. Prints one line per month logged. Run by go and brief with the work.
 
 # At most 30 lines of a git command's output, so the SessionStart hook stays small.
 handover_git() { # <top> <git args…>
@@ -141,18 +144,46 @@ handover_trim() { # <top>
   rm -f "$old" "$moved"
 }
 
+handover_log() { # <top>
+  local top="$1" dir="$1/.solidvibes/done" log="$1/docs/log" f m n
+  [ -f "$top/.solidvibes/manifest.json" ] && [ -d "$dir" ] && [ ! -L "$dir" ] && [ ! -L "$log" ] || return 0
+  for f in "$dir"/*.md; do
+    m="${f##*/}"; m="${m%.md}"
+    case "$m" in [12][0-9][0-9][0-9]-[01][0-9]) ;; *) continue ;; esac
+    [ -f "$f" ] && [ ! -L "$f" ] && [ ! -L "$log/$m.md" ] || continue
+    n="$(grep -c '^- ' "$f" || true)"
+    mkdir -p "$log"
+    {
+      echo "# Work log $m"
+      echo
+      echo "_Done lines from the handover, newest first. Added by \`solidvibes handover --log\` with the work they describe._"
+      echo
+      awk 'body { print; next } /^- / { body = 1; print }' "$f"
+      if [ -f "$log/$m.md" ]; then awk 'body { print; next } /^- / { body = 1; print }' "$log/$m.md"; fi
+    } > "$log/.$m.tmp.$$"
+    mv "$log/.$m.tmp.$$" "$log/$m.md"
+    rm -f "$f"
+    echo "logged $n line(s) to docs/log/$m.md"
+  done
+}
+
 cli_handover() {
-  local snapshot=false dir="" top
+  local snapshot=false logged=false dir="" top
   while [ $# -gt 0 ]; do
     case "$1" in
       --snapshot) snapshot=true ;;
+      --log) logged=true ;;
       -*) echo "error: unknown option: $1" >&2; return 1 ;;
       *) [ -z "$dir" ] || { echo "error: one project folder only" >&2; return 1; }; dir="$1" ;;
     esac
     shift
   done
-  [ "$snapshot" = true ] || { echo "usage: solidvibes handover --snapshot [dir]" >&2; return 1; }
+  [ "$snapshot" != "$logged" ] || { echo "usage: solidvibes handover --snapshot|--log [dir]" >&2; return 1; }
   top="$(git -C "${dir:-.}" rev-parse --show-toplevel 2>/dev/null)" || return 0
+  if [ "$logged" = true ]; then
+    handover_log "$top"
+    return 0
+  fi
   handover_snapshot "$top"
   handover_trim "$top"
 }

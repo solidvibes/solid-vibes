@@ -15,6 +15,7 @@
 #   solidvibes hello [--full] [--checked] [--hook] [dir]
 #                                         a project's status at the start of a session
 #   solidvibes handover --snapshot [dir]  write the git snapshot into .solidvibes/handover.md
+#   solidvibes handover --log [dir]       move archived Done lines into the committed docs/log/
 #   solidvibes statusline --check|--install|--decline
 #                                         report or install the Claude Code status bar script
 #   solidvibes update [dir]               a project's branches, changes, changelog and ecosystems

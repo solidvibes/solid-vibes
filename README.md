@@ -135,6 +135,7 @@ Opinions about tools live in one stack profile, copied into the project as `docs
 - `solidvibes hello [--full] [--checked] [dir]` prints a project's status at the start of a session: handover, setup, CI, docs.
 - `solidvibes update [dir]` prints where a repo stands for the `update` skill. [How it works](docs/how-it-works/update.md).
 - `solidvibes handover --snapshot [dir]` saves the git snapshot into `.solidvibes/handover.md`. The Claude Code hook runs it before compaction.
+- `solidvibes handover --log [dir]` moves the handover's archived Done lines into the committed `docs/log/`. `go` and `brief` run it with the work.
 - `solidvibes statusline --check|--install` reports or installs a status bar for Claude Code. Never replaces yours. [How it works](docs/how-it-works/status-bar.md).
 
 More: [docs/how-it-works/](docs/how-it-works/) and [docs/decisions/](docs/decisions/).

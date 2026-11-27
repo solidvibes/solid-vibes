@@ -5,6 +5,7 @@ One plain sentence per entry.
 
 ## Unreleased
 
+- Finished work is kept in `docs/log/`, one file per month, committed with each piece of work so every device sees it.
 - The handover keeps its five newest Done lines, so each session starts smaller; older ones move to one file per month in `.solidvibes/done/`.
 - `hello` and `bye` keep Open and Next to what is in progress, and the session start warns when the handover is too big or its Done trim is off.
 - The plugin has an icon, and its README says what runs on your computer and that nothing is sent off it.

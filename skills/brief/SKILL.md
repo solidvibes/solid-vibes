@@ -53,6 +53,8 @@ One or two sentences: what changed, how it was checked, anything pre-existing or
 
 Changelog per the contract's `docs`: one short user-facing line ("X now does Y") under `## Unreleased`. One plain sentence, no sub-clauses, no bold spans, no "instead of…" tails. Skip if `none` or the change is invisible to users (a pure refactor, internal infrastructure, generated code).
 
+Work log: run `solidvibes handover --log`. It moves the Done lines the handover has archived into the committed `docs/log/YYYY-MM.md`; they go in with this work.
+
 If the change revealed stale or missing docs, reconcile them on the right side of the contract's `docs` line: a changed behavior fact, limit or intent → the behavior docs (`docs/how-it-works/<surface>.md`, status `Built` in the same change, or `docs/intent.md` through a decision); a stale or missing code rule or gotcha → the matching `rules` file, a line or two, don't let it bloat; a crosscutting invariant → `AGENTS.md`. Don't restate behavior in a rule file. Stop to ask only for a brand-new rule file or a core change. Update "Right now" in `docs/README.md` when it exists and the state moved.
 
 ## Phase 5 — Review
