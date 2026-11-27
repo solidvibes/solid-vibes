@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # solidvibes worktrees --clean removes only a merged, clean, idle worktree; a local handover and
-# hello.state do not keep it.
+# hello.state, done/ and done.md do not keep it.
 set -euo pipefail
 
 SV="$(cd "$(dirname "$0")/.." && pwd -P)/bin/solidvibes"
@@ -17,7 +17,7 @@ unset SOLIDVIBES_PROJECTS_DIR
 R="$T/repo"
 git init -q -b main "$R"
 cd "$R"
-mkdir .solidvibes && printf 'handover.md\nhello.state\n' > .solidvibes/.gitignore
+mkdir .solidvibes && printf 'handover.md\ndone/\ndone.md\nhello.state\n' > .solidvibes/.gitignore
 echo '*.env' > .gitignore
 echo one > file && git add file .gitignore .solidvibes && git commit -qm one
 
@@ -25,6 +25,8 @@ git worktree add -q -b merged "$T/wt-merged"
 (cd "$T/wt-merged" && echo two >> file && git commit -qam two)
 echo "## Snapshot" > "$T/wt-merged/.solidvibes/handover.md"
 echo abc > "$T/wt-merged/.solidvibes/hello.state"
+mkdir "$T/wt-merged/.solidvibes/done" && echo "- old" > "$T/wt-merged/.solidvibes/done/2026-01.md"
+echo "- old" > "$T/wt-merged/.solidvibes/done.md"
 git merge -q --ff-only merged
 
 git worktree add -q -b env "$T/wt-env" merged

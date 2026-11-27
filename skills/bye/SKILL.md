@@ -11,7 +11,7 @@ How you talk to the user: plain words, short. Say what you saved, one line each.
 
 ## 1. Write the handover
 
-Write `.solidvibes/handover.md`, about 15 lines:
+Write `.solidvibes/handover.md`, about 15 lines. It holds only what is in progress, because every session starts by reading it:
 
 ```
 # Handover
@@ -26,7 +26,7 @@ Write `.solidvibes/handover.md`, about 15 lines:
 - The next steps, in order. The first one is what the next session starts with.
 ```
 
-Put this session's Done lines at the top of Done, newest first; past five, the oldest move to `.solidvibes/done.md` on their own. Replace the old Open and Next. Keep the `## Snapshot` section exactly as it is: a hook writes it before the conversation is compacted. The files are local to this machine and never committed (`.solidvibes/.gitignore` lists them).
+Put this session's Done lines at the top of Done, newest first; past five, the oldest move to `.solidvibes/done/<month>.md` on their own. Rewrite Open and Next; don't just add to them. Keep Open and Next to what is still in progress: drop finished items (a one-liner goes to Done), merge duplicates, at most about 8 lines each. A thought for later goes to `docs/ideas/`, as the routing in `AGENTS.md` says, not to Next. Keep the `## Snapshot` section exactly as it is: a hook writes it before the conversation is compacted. The files are local to this machine and never committed (`.solidvibes/.gitignore` lists them).
 
 ## 2. Keep what was learned
 

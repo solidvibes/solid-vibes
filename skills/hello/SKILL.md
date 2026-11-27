@@ -28,6 +28,8 @@ No Factory contract in `AGENTS.md`, or `setup: none`: say so in plain words and 
 
 Read `.solidvibes/handover.md` if it exists: Done, Open, Next, and the `## Snapshot` (branch, uncommitted work, last commits) written before the last compaction. Keep it in mind for the brief. Don't recite it.
 
+Then prune it, since every session start reads all of it. Keep Open and Next to what is still in progress: drop finished items (a one-liner goes to Done), merge duplicates, at most about 8 lines each. A thought for later goes to `docs/ideas/`, as the routing in `AGENTS.md` says, not to Next. Check what finished against the last commits, merged pull requests and plan statuses. Leave `## Snapshot` as it is. Say what you pruned in the brief's "Done in this hello" line.
+
 ## 3. Bring the project to its latest state
 
 - **Latest commits.** When the current branch has an upstream and is behind it: with no uncommitted work, `git pull --ff-only` and say how many commits came in. Uncommitted work, or the branch has its own commits too: say so in one line and leave it. Never stash, merge or rebase here.

@@ -8,9 +8,12 @@
 #   --full     adds `solidvibes doctor` and `solidvibes worktrees` for the toplevel
 #   --checked  stores the current docs hash in .solidvibes/hello.state (the only write)
 #   --hook     for the SessionStart hook: silent unless .solidvibes/manifest.json exists; trims the
-#              handover's Done to 5 entries (see `solidvibes handover`), prints the handover, the lines above and, on startup, a reminder. Refreshes an installed status
-#              bar script (outside the project) when it differs. Always exits 0.
+#              handover's Done to 5 entries (see `solidvibes handover`), prints the handover, the lines
+#              above, a warning when the handover is over 6 KB or the Done trim is off, and, on startup,
+#              a reminder. Refreshes an installed status bar script (outside the project) when it
+#              differs. Always exits 0.
 
+HELLO_HANDOVER_MAX=6144
 HELLO_DOCS="AGENTS.md docs/intent.md docs/stack.md docs/decisions docs/how-it-works .agents/skills"
 
 hello_mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
@@ -100,7 +103,7 @@ hello_lines() { # <top>
 }
 
 hello_hook() { # <top>
-  local top="$1" input="" source=""
+  local top="$1" input="" source="" size
   [ -f "$top/.solidvibes/manifest.json" ] || return 0
   # shellcheck source=/dev/null
   source "$SOLIDVIBES_ROOT/lib/cli-statusline.sh" && statusline_refresh
@@ -116,6 +119,15 @@ hello_hook() { # <top>
   fi
   echo "Solid Vibes status:"
   hello_lines "$top"
+  if [ -f "$top/.solidvibes/handover.md" ]; then
+    size="$(wc -c < "$top/.solidvibes/handover.md" | tr -d ' ')"
+    if [ "$size" -gt "$HELLO_HANDOVER_MAX" ]; then
+      echo "Handover is $(((size + 1023) / 1024)) KB, over $((HELLO_HANDOVER_MAX / 1024)) KB: keep Open and Next to what is in progress (see the bye skill)."
+    fi
+  fi
+  if ! grep -qxF done/ "$top/.solidvibes/.gitignore" 2>/dev/null; then
+    echo "The Done trim is off: .solidvibes/.gitignore predates it. Run solidvibes init on this project to turn it on."
+  fi
   if [ "$source" = startup ]; then echo "Say hello for the full check."; fi
 }
 

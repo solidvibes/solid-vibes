@@ -1,6 +1,6 @@
 # solidvibes init [--profile <dir>] [--agents claude,codex,generic] <dir>
 #   Sets up a project, or refreshes one. Two kinds of output:
-#   - generated: .solidvibes/* (but the local handover.md, done.md and hello.state), docs/CONVENTIONS.md, AGENTS.md's marked blocks.
+#   - generated: .solidvibes/* (but the local handover.md, done/, done.md and hello.state), docs/CONVENTIONS.md, AGENTS.md's marked blocks.
 #     Rewritten every run, with a header naming the source and version. A file at a generated path that init did not make is skipped.
 #   - seeded: AGENTS.md's other sections, docs/*, CHANGELOG.md. Created only if missing.
 #   Plus `@AGENTS.md` in an existing CLAUDE.md, and .claude/skills/<name> links for Claude Code.
@@ -302,7 +302,7 @@ init_agents_file() {
 # .solidvibes/.gitignore: the handover and the hello hash are one machine's state, never committed.
 init_gitignore() {
   local out="$INIT_TMP/gitignore" label="sv $INIT_SV_VERSION"
-  printf '%s\n' handover.md done.md hello.state > "$out.body"
+  printf '%s\n' handover.md done/ done.md hello.state > "$out.body"
   init_header ".solidvibes/.gitignore" "$label" "$out.body" "$out"
   init_generated "$out" ".solidvibes/.gitignore" "$label" "$INIT_SV_VERSION"
 }

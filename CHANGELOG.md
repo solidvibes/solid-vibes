@@ -5,7 +5,8 @@ One plain sentence per entry.
 
 ## Unreleased
 
-- The handover keeps its five newest Done lines, so each session starts smaller; older ones move to `.solidvibes/done.md`.
+- The handover keeps its five newest Done lines, so each session starts smaller; older ones move to one file per month in `.solidvibes/done/`.
+- `hello` and `bye` keep Open and Next to what is in progress, and the session start warns when the handover is too big or its Done trim is off.
 - The plugin has an icon, and its README says what runs on your computer and that nothing is sent off it.
 - The Progress pane opens on one card that says whether it needs you and where that plan is, lists other plans one line each, and opens a plan's stages when you press it.
 - In a Solid Vibes project, a Progress pane beside the chat shows where the work stands, whether it needs you, how many steps are left before it does, and what was saved to the project.
