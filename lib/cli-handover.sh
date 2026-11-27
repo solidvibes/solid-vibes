@@ -1,20 +1,20 @@
 # solidvibes handover --snapshot [dir]
 #   Replaces the `## Snapshot` section of .solidvibes/handover.md at dir's git toplevel with the
-#   branch, `git status --short`, `git diff --stat`, the last 5 commits and `git worktree list`, at most 30 lines each.
+#   branch, `git status --short` (at most 15 lines) and the last 5 commits.
 #   Everything else in the file stays byte for byte; a missing file is created with that section only.
 #   Silent and writes nothing unless .solidvibes/manifest.json exists and .solidvibes/.gitignore
 #   lists handover.md, so the file is never committed. Run by the PreCompact hook.
 #   Then trims `## Done` to its first 5 entries (newest first); older ones move to the top of
-#   .solidvibes/done/YYYY-MM.md (the entry's month, else this one), which no hook prints, and an
+#   .solidvibes/done/YYYY-MM.md (the month of the entry's first past YYYY-MM-DD, else this one), which no hook prints, and an
 #   older .solidvibes/done.md is split the same way once. Only when .solidvibes/.gitignore lists done/.
 # solidvibes handover --log [dir]
 #   Moves every entry of .solidvibes/done/YYYY-MM.md to the top of the committed docs/log/YYYY-MM.md,
 #   then removes the local file. Prints one line per month logged. Run by go and brief with the work.
 
-# At most 30 lines of a git command's output, so the SessionStart hook stays small.
+# At most 15 lines of a git command's output, so the SessionStart hook stays small.
 handover_git() { # <top> <git args…>
   local top="$1"; shift
-  git -C "$top" "$@" 2>/dev/null | awk 'NR <= 30 { print } END { if (NR > 30) print "… " NR - 30 " more lines" }' || true
+  git -C "$top" "$@" 2>/dev/null | awk 'NR <= 15 { print } END { if (NR > 15) print "… " NR - 15 " more lines" }' || true
 }
 
 handover_section() { # <top>
@@ -30,19 +30,9 @@ handover_section() { # <top>
   handover_git "$top" status --short
   echo '```'
   echo
-  echo "Diff:"
-  echo '```'
-  handover_git "$top" diff --stat
-  echo '```'
-  echo
   echo "Last commits:"
   echo '```'
   handover_git "$top" log --oneline -5
-  echo '```'
-  echo
-  echo "Worktrees:"
-  echo '```'
-  handover_git "$top" worktree list
   echo '```'
 }
 
@@ -117,12 +107,18 @@ handover_trim() { # <top>
     return 0
   fi
 
-  # One file per month, by the first YYYY-MM in an entry's first line, else this month.
+  # One file per month, by the first full date (YYYY-MM-DD, not in the future) in an entry's first line, else this month.
   split="$sv/.done.split.$$"
   mkdir "$split"
   awk -v out="$split" -v now="$(date +%Y-%m)" '
     BEGIN { m = now }
-    /^- / { m = now; if (match($0, /(19|20)[0-9][0-9]-(0[1-9]|1[0-2])/)) m = substr($0, RSTART, 7) }
+    /^- / {
+      m = now; rest = $0
+      while (match(rest, /(19|20)[0-9][0-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])/)) {
+        if (substr(rest, RSTART, 7) <= now) { m = substr(rest, RSTART, 7); break }
+        rest = substr(rest, RSTART + RLENGTH)
+      }
+    }
     { if (out "/" m != last) { if (last != "") close(last); last = out "/" m } print >> last }' "$moved"
 
   mkdir -p "$dir"
